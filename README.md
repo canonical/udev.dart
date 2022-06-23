@@ -5,6 +5,33 @@
 
 [libudev](https://www.freedesktop.org/software/systemd/man/libudev.html) — API for enumerating and introspecting local devices
 
+## Querying devices
+
+```dart
+void main() {
+  print(UdevDevice.fromSyspath('/sys/devices/<...>'));
+  print(UdevDevice.fromDevnum('b', 66304));
+  print(UdevDevice.fromSubsystemSysname('net', 'eth0'));
+  print(UdevDevice.fromDeviceId('c128:1'));
+}
+```
+
+## Scanning devices
+
+```dart
+void main() {
+  final context = UdevContext();
+
+  final syspaths = context.scanDevices(subsystems: ['net']);
+  for (final syspath in syspaths) {
+    final device = UdevDevice.fromSyspath(syspath, context: context);
+    print(device);
+  }
+
+  context.dispose();
+}
+```
+
 ## Contributing to udev.dart
 
 We welcome contributions! See the [contribution guide](CONTRIBUTING.md) for more details.
