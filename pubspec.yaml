@@ -1,5 +1,9 @@
 name: udev
-version: 0.0.0
+description: API for enumerating and introspecting local devices
+homepage: https://www.freedesktop.org/software/systemd/man/libudev.html
+repository: https://github.com/canonical/udev.dart
+issue_tracker: https://github.com/canonical/udev.dart/issues
+version: 0.0.1
 
 environment:
   sdk: '>=2.17.0 <3.0.0'
