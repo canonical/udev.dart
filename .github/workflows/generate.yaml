@@ -1,0 +1,25 @@
+name: Generate
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-runner:
+    runs-on: ubuntu-20.04
+    container:
+      image: dart:stable
+    steps:
+    - uses: actions/checkout@v2
+    - run: dart pub get
+    - run: dart run build_runner build --delete-conflicting-outputs
+    - run: ./.github/scripts/check-outdated-files.sh
+      if: github.event_name != 'push'
+    - uses: peter-evans/create-pull-request@v3
+      if: github.event_name != 'pull_request'
+      with:
+        title: 'Regenerate files'
+        commit-message: 'Regenerate files'
