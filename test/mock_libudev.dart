@@ -1,5 +1,6 @@
 import 'dart:ffi' as ffi;
 
+import 'package:collection/collection.dart';
 import 'package:mockito/mockito.dart';
 import 'package:udev/src/bindings.g.dart';
 import 'package:udev/src/device.dart';
@@ -29,7 +30,7 @@ MockLibudev createMockLibudev({
     )).thenReturn(ptr);
     when(libudev.udev_device_new_from_devnum(
       ctx,
-      device.subsystem.codeUnitAt(0),
+      device.subsystem.codeUnits.firstOrNull,
       device.devnum,
     )).thenReturn(ptr);
     when(libudev.udev_device_new_from_subsystem_sysname(
