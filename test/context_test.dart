@@ -1,7 +1,7 @@
 import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart' as ffi;
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:udev/src/bindings.g.dart';
 import 'package:udev/src/context.dart';
@@ -29,20 +29,17 @@ void main() {
       );
       overrideLibudevForTesting(libudev);
 
-      when(libudev.udev_enumerate_add_match_subsystem(
-              ptr, argThat(isCString('net'))))
+      when(() => libudev.udev_enumerate_add_match_subsystem(
+          ptr, any(that: isCString('net')))).thenReturn(0);
+      when(() => libudev.udev_enumerate_add_match_sysname(
+          ptr, any(that: isCString('nvme0n1')))).thenReturn(0);
+      when(() => libudev.udev_enumerate_add_match_tag(
+          ptr, any(that: isCString(':systemd:')))).thenReturn(0);
+      when(() => libudev.udev_enumerate_add_match_property(
+              ptr, any(that: isCString('foo')), any(that: isCString('bar'))))
           .thenReturn(0);
-      when(libudev.udev_enumerate_add_match_sysname(
-              ptr, argThat(isCString('nvme0n1'))))
-          .thenReturn(0);
-      when(libudev.udev_enumerate_add_match_tag(
-              ptr, argThat(isCString(':systemd:'))))
-          .thenReturn(0);
-      when(libudev.udev_enumerate_add_match_property(
-              ptr, argThat(isCString('foo')), argThat(isCString('bar'))))
-          .thenReturn(0);
-      when(libudev.udev_enumerate_add_match_sysattr(
-              ptr, argThat(isCString('baz')), argThat(isCString('qux'))))
+      when(() => libudev.udev_enumerate_add_match_sysattr(
+              ptr, any(that: isCString('baz')), any(that: isCString('qux'))))
           .thenReturn(0);
 
       final context = UdevContext.fromPointer(ctx);
@@ -51,32 +48,35 @@ void main() {
         context.scanDevices(subsystems: ['net']),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
-      verify(libudev.udev_enumerate_add_match_subsystem(ptr, any)).called(1);
+      verify(() => libudev.udev_enumerate_add_match_subsystem(ptr, any()))
+          .called(1);
 
       expect(
         context.scanDevices(sysnames: ['nvme0n1']),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
-      verify(libudev.udev_enumerate_add_match_sysname(ptr, any)).called(1);
+      verify(() => libudev.udev_enumerate_add_match_sysname(ptr, any()))
+          .called(1);
 
       expect(
         context.scanDevices(tags: [':systemd:']),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
-      verify(libudev.udev_enumerate_add_match_tag(ptr, any)).called(1);
+      verify(() => libudev.udev_enumerate_add_match_tag(ptr, any())).called(1);
 
       expect(
         context.scanDevices(properties: {'foo': 'bar'}),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
-      verify(libudev.udev_enumerate_add_match_property(ptr, any, any))
+      verify(() => libudev.udev_enumerate_add_match_property(ptr, any(), any()))
           .called(1);
 
       expect(
         context.scanDevices(sysattrs: {'baz': 'qux'}),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
-      verify(libudev.udev_enumerate_add_match_sysattr(ptr, any, any)).called(1);
+      verify(() => libudev.udev_enumerate_add_match_sysattr(ptr, any(), any()))
+          .called(1);
     });
   });
 }

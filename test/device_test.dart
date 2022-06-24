@@ -1,7 +1,7 @@
 import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart' as ffi;
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:udev/src/bindings.g.dart';
 import 'package:udev/src/device.dart';
@@ -25,25 +25,25 @@ void main() {
         UdevDevice.fromSyspath(wlp0s20f3.syspath),
         equals(wlp0s20f3),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromDevnum(wlp0s20f3.subsystem[0], wlp0s20f3.devnum),
         equals(wlp0s20f3),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromSubsystemSysname(wlp0s20f3.subsystem, wlp0s20f3.sysname),
         equals(wlp0s20f3),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromDeviceId('n2'),
         equals(wlp0s20f3),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
     });
   });
 
@@ -61,25 +61,25 @@ void main() {
         UdevDevice.fromSyspath(nvme0n1.syspath),
         equals(nvme0n1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromDevnum(nvme0n1.subsystem[0], nvme0n1.devnum),
         equals(nvme0n1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromSubsystemSysname(nvme0n1.subsystem, nvme0n1.sysname),
         equals(nvme0n1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromDeviceId('b259:0'), // block<major>:<minor>
         equals(nvme0n1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
     });
   });
 
@@ -97,25 +97,25 @@ void main() {
         UdevDevice.fromSyspath(card1.syspath),
         equals(card1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromDevnum(card1.subsystem[0], card1.devnum),
         equals(card1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromSubsystemSysname(card1.subsystem, card1.sysname),
         equals(card1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
         UdevDevice.fromDeviceId('sound:card1'),
         equals(card1),
       );
-      verify(libudev.udev_device_unref(dev)).called(1);
+      verify(() => libudev.udev_device_unref(dev)).called(1);
     });
   });
 }

@@ -16,5 +16,5 @@ dependencies:
 dev_dependencies:
   ffigen: ^6.0.1
   lints: ^2.0.0
-  mockito: ^5.2.0
+  mocktail: ^0.3.0
   test: ^1.17.7
