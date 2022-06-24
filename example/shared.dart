@@ -14,7 +14,7 @@ void printTable(Map<String, Iterable<String>> table) {
   }
 
   printLine(table.keys);
-  for (var i = 0; i < table.length; ++i) {
+  for (var i = 0; i < table.values.first.length; ++i) {
     printLine(table.values.map((j) => j.elementAt(i)));
   }
 }
