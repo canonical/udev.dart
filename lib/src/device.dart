@@ -7,13 +7,14 @@ import 'package:meta/meta.dart';
 import 'context.dart';
 import 'exception.dart';
 import 'extensions.dart';
+import 'finalizer.dart';
 import 'libudev.dart';
 import 'list_entry.dart';
 
 @immutable
 class UdevDevice implements ffi.Finalizable {
   UdevDevice._(ffi.Pointer<udev_device_t> ptr) : _ptr = udev.device_ref(ptr) {
-    _finalizer.attach(this, _ptr.cast(), detach: this);
+    UdevFinalizer.attach(this, _ptr);
   }
 
   factory UdevDevice.fromSyspath(String syspath, {UdevContext? context}) {
@@ -93,7 +94,7 @@ class UdevDevice implements ffi.Finalizable {
   void _unref() => udev.device_unref(_ptr);
 
   void dispose() {
-    _finalizer.detach(this);
+    UdevFinalizer.detach(this);
     _unref();
   }
 
@@ -132,19 +133,10 @@ class UdevDevice implements ffi.Finalizable {
     });
   }
 
-  static final _finalizer =
-      ffi.NativeFinalizer(dylib.lookup('udev_device_unref'));
-
   ffi.Pointer<udev_device_t> toPointer() => _ptr;
 
   final ffi.Pointer<udev_device_t> _ptr;
 
   @override
   String toString() => 'UdevDevice(syspath: $syspath)';
-
-  @override
-  bool operator ==(Object other) => other is UdevDevice && other._ptr == _ptr;
-
-  @override
-  int get hashCode => _ptr.hashCode;
 }
