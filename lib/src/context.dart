@@ -7,15 +7,17 @@ import 'libudev.dart';
 import 'list_entry.dart';
 
 class UdevContext implements ffi.Finalizable {
-  factory UdevContext() => UdevContext.fromPointer(udev.new_());
+  factory UdevContext() => UdevContext.fromPointer(udev.new_()).._unref();
 
-  UdevContext.fromPointer(this._ptr) {
+  UdevContext.fromPointer(ffi.Pointer<udev_t> ptr) : _ptr = udev.ref(ptr) {
     _finalizer.attach(this, _ptr.cast(), detach: this);
   }
 
+  void _unref() => udev.unref(_ptr);
+
   void dispose() {
     _finalizer.detach(this);
-    udev.unref(_ptr);
+    _unref();
   }
 
   static final _finalizer = ffi.NativeFinalizer(dylib.lookup('udev_unref'));

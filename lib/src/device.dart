@@ -12,7 +12,7 @@ import 'list_entry.dart';
 
 @immutable
 class UdevDevice implements ffi.Finalizable {
-  UdevDevice._(this._ptr) {
+  UdevDevice._(ffi.Pointer<udev_device_t> ptr) : _ptr = udev.device_ref(ptr) {
     _finalizer.attach(this, _ptr.cast(), detach: this);
   }
 
@@ -90,9 +90,11 @@ class UdevDevice implements ffi.Finalizable {
     return UdevDevice._(ptr);
   }
 
+  void _unref() => udev.device_unref(_ptr);
+
   void dispose() {
     _finalizer.detach(this);
-    udev.device_unref(_ptr);
+    _unref();
   }
 
   String get devpath => udev.device_get_devpath(_ptr).toDartString()!;
@@ -126,8 +128,7 @@ class UdevDevice implements ffi.Finalizable {
       final ptr = factory(ctx.toPointer());
       final dev = UdevDevice.fromPointer(ptr);
       if (context == null) ctx.dispose();
-      udev.device_unref(ptr);
-      return dev;
+      return dev?.._unref();
     });
   }
 
