@@ -5,11 +5,10 @@ import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
-import 'bindings.g.dart';
 import 'context.dart';
-import 'dylib.dart';
 import 'exception.dart';
 import 'extensions.dart';
+import 'libudev.dart';
 import 'list_entry.dart';
 
 @immutable
@@ -39,7 +38,7 @@ class UdevDevice {
       final csyspath = syspath.toCString(allocator: arena);
       final dev = _tryCreate(
         context,
-        (ctx) => dylib.udev_device_new_from_syspath(ctx, csyspath),
+        (ctx) => udev.device_new_from_syspath(ctx, csyspath),
       );
       return dev.orThrowIfNull(UdevSyspathException(syspath));
     });
@@ -55,7 +54,7 @@ class UdevDevice {
       final ctype = type.codeUnitAt(0);
       final dev = _tryCreate(
         context,
-        (ctx) => dylib.udev_device_new_from_devnum(ctx, ctype, devnum),
+        (ctx) => udev.device_new_from_devnum(ctx, ctype, devnum),
       );
       return dev.orThrowIfNull(UdevDevnumException(type, devnum));
     });
@@ -71,7 +70,7 @@ class UdevDevice {
       final csysname = sysname.toCString(allocator: arena);
       final dev = _tryCreate(
         context,
-        (ctx) => dylib.udev_device_new_from_subsystem_sysname(
+        (ctx) => udev.device_new_from_subsystem_sysname(
           ctx,
           csubsystem,
           csysname,
@@ -87,7 +86,7 @@ class UdevDevice {
       final cid = id.toCString(allocator: arena);
       final dev = _tryCreate(
         context,
-        (ctx) => dylib.udev_device_new_from_device_id(ctx, cid),
+        (ctx) => udev.device_new_from_device_id(ctx, cid),
       );
       return dev.orThrowIfNull(UdevDeviceIdException(id));
     });
@@ -97,32 +96,32 @@ class UdevDevice {
     return ffi.using((arena) {
       final dev = _tryCreate(
         context,
-        (ctx) => dylib.udev_device_new_from_environment(ctx),
+        (ctx) => udev.device_new_from_environment(ctx),
       );
       return dev.orThrowIfNull(UdevEnvironmentException(Platform.environment));
     });
   }
 
-  static UdevDevice? fromPointer(ffi.Pointer<udev_device> ptr) {
+  static UdevDevice? fromPointer(ffi.Pointer<udev_device_t> ptr) {
     if (ptr == ffi.nullptr) return null;
     return UdevDevice(
-      devpath: dylib.udev_device_get_devpath(ptr).toDartString()!,
-      subsystem: dylib.udev_device_get_subsystem(ptr).toDartString(),
-      devtype: dylib.udev_device_get_devtype(ptr).toDartString(),
-      syspath: dylib.udev_device_get_syspath(ptr).toDartString()!,
-      sysname: dylib.udev_device_get_sysname(ptr).toDartString()!,
-      sysnum: dylib.udev_device_get_sysnum(ptr).toDartString(),
-      devnode: dylib.udev_device_get_devnode(ptr).toDartString(),
-      isInitialized: dylib.udev_device_get_is_initialized(ptr) != 0,
-      driver: dylib.udev_device_get_driver(ptr).toDartString(),
-      devnum: dylib.udev_device_get_devnum(ptr),
-      action: dylib.udev_device_get_action(ptr).toDartString(),
-      seqnum: dylib.udev_device_get_seqnum(ptr),
-      devlinks: dylib.udev_device_get_devlinks_list_entry(ptr).toDartList(),
-      properties: dylib.udev_device_get_properties_list_entry(ptr).toDartMap(),
-      tags: dylib.udev_device_get_tags_list_entry(ptr).toDartList(),
-      sysattrs: dylib.udev_device_get_sysattr_list_entry(ptr).toDartMap(),
-      parent: fromPointer(dylib.udev_device_get_parent(ptr)),
+      devpath: udev.device_get_devpath(ptr).toDartString()!,
+      subsystem: udev.device_get_subsystem(ptr).toDartString(),
+      devtype: udev.device_get_devtype(ptr).toDartString(),
+      syspath: udev.device_get_syspath(ptr).toDartString()!,
+      sysname: udev.device_get_sysname(ptr).toDartString()!,
+      sysnum: udev.device_get_sysnum(ptr).toDartString(),
+      devnode: udev.device_get_devnode(ptr).toDartString(),
+      isInitialized: udev.device_get_is_initialized(ptr) != 0,
+      driver: udev.device_get_driver(ptr).toDartString(),
+      devnum: udev.device_get_devnum(ptr),
+      action: udev.device_get_action(ptr).toDartString(),
+      seqnum: udev.device_get_seqnum(ptr),
+      devlinks: udev.device_get_devlinks_list_entry(ptr).toDartList(),
+      properties: udev.device_get_properties_list_entry(ptr).toDartMap(),
+      tags: udev.device_get_tags_list_entry(ptr).toDartList(),
+      sysattrs: udev.device_get_sysattr_list_entry(ptr).toDartMap(),
+      parent: fromPointer(udev.device_get_parent(ptr)),
     );
   }
 
@@ -146,14 +145,14 @@ class UdevDevice {
 
   static UdevDevice? _tryCreate(
     UdevContext? context,
-    ffi.Pointer<udev_device> Function(ffi.Pointer<udev> ctx) factory,
+    ffi.Pointer<udev_device_t> Function(ffi.Pointer<udev_t> ctx) factory,
   ) {
     return ffi.using((arena) {
       final ctx = context ?? UdevContext();
       final ptr = factory(ctx.toPointer());
       if (context == null) ctx.dispose();
       final dev = UdevDevice.fromPointer(ptr);
-      dylib.udev_device_unref(ptr);
+      udev.device_unref(ptr);
       return dev;
     });
   }

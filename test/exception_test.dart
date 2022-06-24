@@ -2,8 +2,7 @@ import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:test/test.dart';
-import 'package:udev/src/bindings.g.dart';
-import 'package:udev/src/dylib.dart';
+import 'package:udev/src/libudev.dart';
 import 'package:udev/udev.dart';
 
 import 'mock_libudev.dart';
@@ -50,7 +49,7 @@ void main() {
 
       final libudev = createMockLibudev(
         allocator: arena,
-        context: ffi.Pointer<udev>.fromAddress(0xc),
+        context: ffi.Pointer<udev_t>.fromAddress(0xc),
         devices: {ffi.nullptr: dummy},
       );
       overrideLibudevForTesting(libudev);

@@ -1,6 +1,6 @@
 name: Libudev
 description: API for enumerating and introspecting local devices
-output: 'lib/src/bindings.g.dart'
+output: 'lib/src/libudev.g.dart'
 preamble: // coverage:ignore-file
 headers:
   entry-points:
@@ -10,6 +10,9 @@ functions:
     - 'udev_.*'
   exclude:
     - 'udev_[gs]et_log.*'
+  rename:
+    'udev_new': 'new_'
+    'udev_(.*)': '$1'
 macros:
   exclude:
     - '.*'
@@ -17,6 +20,8 @@ structs:
   dependency-only: opaque
   include:
     - 'udev.*'
+  rename:
+    '(udev.*)': '$1_t'
 unions:
   exclude:
     - '.*'

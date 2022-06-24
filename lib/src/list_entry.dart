@@ -1,17 +1,16 @@
 import 'dart:ffi' as ffi;
 
-import 'bindings.g.dart';
-import 'dylib.dart';
 import 'extensions.dart';
+import 'libudev.dart';
 
-extension UdevListEntry on ffi.Pointer<udev_list_entry> {
+extension UdevListEntry on ffi.Pointer<udev_list_entry_t> {
   Map<String, String?> toDartMap() {
     final map = <String, String?>{};
     var next = this;
     while (next != ffi.nullptr) {
-      final name = dylib.udev_list_entry_get_name(next).toDartString()!;
-      map[name] = dylib.udev_list_entry_get_value(next).toDartString();
-      next = dylib.udev_list_entry_get_next(next);
+      final name = udev.list_entry_get_name(next).toDartString()!;
+      map[name] = udev.list_entry_get_value(next).toDartString();
+      next = udev.list_entry_get_next(next);
     }
     return map;
   }
@@ -20,8 +19,8 @@ extension UdevListEntry on ffi.Pointer<udev_list_entry> {
     final list = <String>[];
     var next = this;
     while (next != ffi.nullptr) {
-      list.add(dylib.udev_list_entry_get_name(next).toDartString()!);
-      next = dylib.udev_list_entry_get_next(next);
+      list.add(udev.list_entry_get_name(next).toDartString()!);
+      next = udev.list_entry_get_next(next);
     }
     return list;
   }
