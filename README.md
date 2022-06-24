@@ -27,8 +27,6 @@ void main() {
     final device = UdevDevice.fromSyspath(syspath, context: context);
     print(device);
   }
-
-  context.dispose();
 }
 ```
 

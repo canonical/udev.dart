@@ -4,13 +4,21 @@ import 'package:collection/collection.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:udev/src/device.dart';
 import 'package:udev/src/extensions.dart';
+import 'package:udev/src/finalizer.dart';
 import 'package:udev/src/libudev.dart';
 
 import 'test_utils.dart';
 
-// ignore_for_file: return_of_invalid_type, non_constant_identifier_names
-
 class MockLibudev extends Mock implements Libudev {}
+
+class FakeUdevFinalizer extends Fake implements UdevFinalizer {
+  @override
+  void attach<T extends ffi.NativeType>(
+      ffi.Finalizable object, ffi.Pointer<T> ptr) {}
+
+  @override
+  void detach(ffi.Finalizable object) {}
+}
 
 MockLibudev createMockLibudev({
   required ffi.Allocator allocator,
@@ -22,6 +30,8 @@ MockLibudev createMockLibudev({
   final udev = MockLibudev();
 
   registerFallbackValue(ffi.Pointer<ffi.Char>.fromAddress(0));
+
+  overrideFinalizerForTesting(FakeUdevFinalizer());
 
   final ctxptr = context ?? ffi.Pointer<udev_t>.fromAddress(0x1234);
   when(udev.new_).thenReturn(ctxptr);
