@@ -143,6 +143,7 @@ class UdevDevice {
   static UdevDevice? _tryCreate(
     UdevContext? context,
     ffi.Pointer<udev_device> Function(ffi.Pointer<udev> ctx) factory,
+    {bool unref = true}
   ) {
     return ffi.using((arena) {
       final ctx = context ?? UdevContext();
@@ -150,7 +151,7 @@ class UdevDevice {
       if (context == null) ctx.dispose();
       if (ptr == ffi.nullptr) return null;
       final dev = UdevDevice.fromPointer(ptr);
-      dylib.udev_device_unref(ptr);
+      if (unref) dylib.udev_device_unref(ptr);
       return dev;
     });
   }
@@ -241,6 +242,16 @@ class UdevDevice {
           unref: false,
         );
         return parent;
+      });
+    });
+  }
+
+  String? getSysattrValue(String sysattr) {
+    return _usingPointer((devicePtr) {
+      return ffi.using((arena) {
+        final csysattr = sysattr.toCString(allocator: arena);
+        final sysattrPtr = dylib.udev_device_get_sysattr_value(devicePtr, csysattr);
+        return sysattrPtr.toDartString();
       });
     });
   }
