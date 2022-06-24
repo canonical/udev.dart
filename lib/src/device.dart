@@ -103,13 +103,10 @@ class UdevDevice implements ffi.Finalizable {
   int get devnum => udev.device_get_devnum(_ptr);
   String? get action => udev.device_get_action(_ptr).toDartString();
   int get seqnum => udev.device_get_seqnum(_ptr);
-  List<String> get devlinks =>
-      udev.device_get_devlinks_list_entry(_ptr).toDartList();
-  Map<String, String?> get properties =>
-      udev.device_get_properties_list_entry(_ptr).toDartMap();
-  List<String> get tags => udev.device_get_tags_list_entry(_ptr).toDartList();
-  Map<String, String?> get sysattrs =>
-      udev.device_get_sysattr_list_entry(_ptr).toDartMap();
+  Iterable<String> get devlinks => _UdevDevlinks(_ptr);
+  Map<String, String?> get properties => UdevPropertyMap(_ptr);
+  Iterable<String> get tags => _UdevTags(_ptr);
+  Map<String, String?> get sysattrs => UdevSysattrMap(_ptr);
   UdevDevice? get parent =>
       UdevDevice.fromPointer(udev.device_get_parent(_ptr));
 
@@ -132,4 +129,18 @@ class UdevDevice implements ffi.Finalizable {
 
   @override
   String toString() => 'UdevDevice(syspath: $syspath)';
+}
+
+class _UdevDevlinks extends UdevIterable implements ffi.Finalizable {
+  _UdevDevlinks(ffi.Pointer<udev_device_t> ptr)
+      : super(udev.device_get_devlinks_list_entry(ptr)) {
+    finalizer.attach(this, udev.device_ref(ptr));
+  }
+}
+
+class _UdevTags extends UdevIterable implements ffi.Finalizable {
+  _UdevTags(ffi.Pointer<udev_device_t> ptr)
+      : super(udev.device_get_tags_list_entry(ptr)) {
+    finalizer.attach(this, udev.device_ref(ptr));
+  }
 }

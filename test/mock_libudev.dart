@@ -121,6 +121,13 @@ MockLibudev createMockLibudev({
         _createMockMapEntries(udev, device.properties, allocator: allocator);
     when(() => udev.device_get_properties_list_entry(devptr))
         .thenReturn(properties);
+    when(() => udev.device_get_property_value(devptr, any())).thenAnswer(
+        (invocation) =>
+            device.properties[(invocation.positionalArguments.last
+                        as ffi.Pointer<ffi.Char>)
+                    .toDartString()]
+                ?.toCString(allocator: allocator) ??
+            ffi.nullptr);
 
     final tags =
         _createMockListEntries(udev, device.tags, allocator: allocator);
@@ -129,6 +136,13 @@ MockLibudev createMockLibudev({
     final sysattrs =
         _createMockMapEntries(udev, device.sysattrs, allocator: allocator);
     when(() => udev.device_get_sysattr_list_entry(devptr)).thenReturn(sysattrs);
+    when(() => udev.device_get_sysattr_value(devptr, any())).thenAnswer(
+        (invocation) =>
+            device.sysattrs[(invocation.positionalArguments.last
+                        as ffi.Pointer<ffi.Char>)
+                    .toDartString()]
+                ?.toCString(allocator: allocator) ??
+            ffi.nullptr);
 
     when(() => udev.device_get_parent(devptr)).thenReturn(ffi.nullptr);
   }
@@ -141,7 +155,7 @@ int get _nextAddress => _address += ffi.sizeOf<ffi.Pointer>();
 
 ffi.Pointer<udev_list_entry_t> _createMockListEntries(
   Libudev libudev,
-  List<String> values, {
+  Iterable<String> values, {
   required ffi.Allocator allocator,
 }) {
   final keys =

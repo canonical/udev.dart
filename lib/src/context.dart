@@ -20,7 +20,7 @@ class UdevContext implements ffi.Finalizable {
 
   final ffi.Pointer<udev_t> _ptr;
 
-  List<String> scanDevices({
+  Iterable<String> scanDevices({
     List<String> subsystems = const [],
     List<String> sysnames = const [],
     Map<String, String?> properties = const {},
@@ -53,9 +53,16 @@ class UdevContext implements ffi.Finalizable {
         udev.enumerate_add_match_tag(ptr, tag.toCString(allocator: arena));
       }
       udev.enumerate_scan_devices(ptr);
-      final devices = udev.enumerate_get_list_entry(ptr).toDartList();
+      final devices = _UdevEnumerate(ptr);
       udev.enumerate_unref(ptr);
       return devices;
     });
+  }
+}
+
+class _UdevEnumerate extends UdevIterable implements ffi.Finalizable {
+  _UdevEnumerate(ffi.Pointer<udev_enumerate_t> ptr)
+      : super(udev.enumerate_get_list_entry(ptr)) {
+    finalizer.attach(this, udev.enumerate_ref(ptr));
   }
 }
