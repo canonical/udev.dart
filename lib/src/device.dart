@@ -210,4 +210,38 @@ class UdevDevice {
       mapHash(sysattrs),
     );
   }
+
+  R _usingPointer<R>(R Function(ffi.Pointer<udev_device>) computation) {
+    final ptr = ffi.using((arena) {
+      final csyspath = syspath.toCString(allocator: arena);
+      final ctx = UdevContext();
+      final ptr = dylib.udev_device_new_from_syspath(ctx.toPointer(), csyspath);
+      ctx.dispose();
+      return ptr;
+    });
+    try {
+      return computation(ptr);
+    } finally {
+      dylib.udev_device_unref(ptr);
+    }
+  }
+
+  UdevDevice? getParentWithSubsystemDevtype(String subsystem, {UdevContext? context}) {
+    return _usingPointer((devicePtr) {
+      return ffi.using((arena) {
+        final csubsystem = subsystem.toCString(allocator: arena);
+        final parent = _tryCreate(
+          context,
+          (ctx) => dylib.udev_device_get_parent_with_subsystem_devtype(
+            devicePtr,
+            csubsystem,
+            ffi.nullptr, // FIXME
+          ),
+          /* udev_device_get_parent_*() does not take a reference on the returned device, it is automatically unref'd with the parent */
+          unref: false,
+        );
+        return parent;
+      });
+    });
+  }
 }
