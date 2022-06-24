@@ -1,7 +1,6 @@
 import 'dart:ffi' as ffi;
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
@@ -12,26 +11,10 @@ import 'libudev.dart';
 import 'list_entry.dart';
 
 @immutable
-class UdevDevice {
-  const UdevDevice({
-    required this.devpath,
-    required this.subsystem,
-    required this.devtype,
-    required this.syspath,
-    required this.sysname,
-    required this.sysnum,
-    required this.devnode,
-    required this.isInitialized,
-    required this.driver,
-    required this.devnum,
-    required this.action,
-    required this.seqnum,
-    required this.devlinks,
-    required this.properties,
-    required this.tags,
-    required this.sysattrs,
-    required this.parent,
-  });
+class UdevDevice implements ffi.Finalizable {
+  UdevDevice._(this._ptr) {
+    _finalizer.attach(this, _ptr.cast(), detach: this);
+  }
 
   factory UdevDevice.fromSyspath(String syspath, {UdevContext? context}) {
     return ffi.using((arena) {
@@ -104,44 +87,35 @@ class UdevDevice {
 
   static UdevDevice? fromPointer(ffi.Pointer<udev_device_t> ptr) {
     if (ptr == ffi.nullptr) return null;
-    return UdevDevice(
-      devpath: udev.device_get_devpath(ptr).toDartString()!,
-      subsystem: udev.device_get_subsystem(ptr).toDartString(),
-      devtype: udev.device_get_devtype(ptr).toDartString(),
-      syspath: udev.device_get_syspath(ptr).toDartString()!,
-      sysname: udev.device_get_sysname(ptr).toDartString()!,
-      sysnum: udev.device_get_sysnum(ptr).toDartString(),
-      devnode: udev.device_get_devnode(ptr).toDartString(),
-      isInitialized: udev.device_get_is_initialized(ptr) != 0,
-      driver: udev.device_get_driver(ptr).toDartString(),
-      devnum: udev.device_get_devnum(ptr),
-      action: udev.device_get_action(ptr).toDartString(),
-      seqnum: udev.device_get_seqnum(ptr),
-      devlinks: udev.device_get_devlinks_list_entry(ptr).toDartList(),
-      properties: udev.device_get_properties_list_entry(ptr).toDartMap(),
-      tags: udev.device_get_tags_list_entry(ptr).toDartList(),
-      sysattrs: udev.device_get_sysattr_list_entry(ptr).toDartMap(),
-      parent: fromPointer(udev.device_get_parent(ptr)),
-    );
+    return UdevDevice._(ptr);
   }
 
-  final String devpath;
-  final String? subsystem;
-  final String? devtype;
-  final String syspath;
-  final String sysname;
-  final String? sysnum;
-  final String? devnode;
-  final bool isInitialized;
-  final String? driver;
-  final int devnum;
-  final String? action;
-  final int seqnum;
-  final List<String> devlinks;
-  final Map<String, String?> properties;
-  final List<String> tags;
-  final Map<String, String?> sysattrs;
-  final UdevDevice? parent;
+  void dispose() {
+    _finalizer.detach(this);
+    udev.device_unref(_ptr);
+  }
+
+  String get devpath => udev.device_get_devpath(_ptr).toDartString()!;
+  String? get subsystem => udev.device_get_subsystem(_ptr).toDartString();
+  String? get devtype => udev.device_get_devtype(_ptr).toDartString();
+  String get syspath => udev.device_get_syspath(_ptr).toDartString()!;
+  String get sysname => udev.device_get_sysname(_ptr).toDartString()!;
+  String? get sysnum => udev.device_get_sysnum(_ptr).toDartString();
+  String? get devnode => udev.device_get_devnode(_ptr).toDartString();
+  bool get isInitialized => udev.device_get_is_initialized(_ptr) != 0;
+  String? get driver => udev.device_get_driver(_ptr).toDartString();
+  int get devnum => udev.device_get_devnum(_ptr);
+  String? get action => udev.device_get_action(_ptr).toDartString();
+  int get seqnum => udev.device_get_seqnum(_ptr);
+  List<String> get devlinks =>
+      udev.device_get_devlinks_list_entry(_ptr).toDartList();
+  Map<String, String?> get properties =>
+      udev.device_get_properties_list_entry(_ptr).toDartMap();
+  List<String> get tags => udev.device_get_tags_list_entry(_ptr).toDartList();
+  Map<String, String?> get sysattrs =>
+      udev.device_get_sysattr_list_entry(_ptr).toDartMap();
+  UdevDevice? get parent =>
+      UdevDevice.fromPointer(udev.device_get_parent(_ptr));
 
   static UdevDevice? _tryCreate(
     UdevContext? context,
@@ -151,66 +125,25 @@ class UdevDevice {
       final ctx = context ?? UdevContext();
       final ptr = factory(ctx.toPointer());
       final dev = UdevDevice.fromPointer(ptr);
+      if (context == null) ctx.dispose();
       udev.device_unref(ptr);
       return dev;
     });
   }
 
-  @override
-  String toString() {
-    return 'UdevDevice(devpath: $devpath, subsystem: $subsystem, devtype: $devtype, syspath: $syspath, sysname: $sysname, sysnum: $sysnum, devnode: $devnode, isInitialized: $isInitialized, driver: $driver, devnum: $devnum, action: $action, seqnum: $seqnum, devlinks: $devlinks, properties: $properties, tags: $tags, sysattrs: $sysattrs, parent: $parent)';
-  }
+  static final _finalizer =
+      ffi.NativeFinalizer(dylib.lookup('udev_device_unref'));
+
+  ffi.Pointer<udev_device_t> toPointer() => _ptr;
+
+  final ffi.Pointer<udev_device_t> _ptr;
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    final mapEquals = const MapEquality<String, String?>().equals;
-    final listEquals = const ListEquality<String>().equals;
-
-    return other is UdevDevice &&
-        other.devpath == devpath &&
-        other.subsystem == subsystem &&
-        other.devtype == devtype &&
-        other.syspath == syspath &&
-        other.sysname == sysname &&
-        other.sysnum == sysnum &&
-        other.devnode == devnode &&
-        other.isInitialized == isInitialized &&
-        other.driver == driver &&
-        other.devnum == devnum &&
-        other.action == action &&
-        other.seqnum == seqnum &&
-        listEquals(other.devlinks, devlinks) &&
-        mapEquals(other.properties, properties) &&
-        listEquals(other.tags, tags) &&
-        mapEquals(other.sysattrs, sysattrs) &&
-        other.parent == parent;
-  }
+  String toString() => 'UdevDevice(syspath: $syspath)';
 
   @override
-  int get hashCode {
-    final mapHash = const MapEquality<String, String?>().hash;
-    final listHash = const ListEquality<String>().hash;
+  bool operator ==(Object other) => other is UdevDevice && other._ptr == _ptr;
 
-    return Object.hash(
-      devpath,
-      subsystem,
-      devtype,
-      syspath,
-      sysname,
-      sysnum,
-      devnode,
-      isInitialized,
-      driver,
-      devnum,
-      action,
-      seqnum,
-      listHash(devlinks),
-      mapHash(properties),
-      listHash(tags),
-      mapHash(sysattrs),
-      parent,
-    );
-  }
+  @override
+  int get hashCode => _ptr.hashCode;
 }

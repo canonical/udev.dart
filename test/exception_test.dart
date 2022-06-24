@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 import 'package:udev/src/libudev.dart';
 import 'package:udev/udev.dart';
 
+import 'fake_device.dart';
 import 'mock_libudev.dart';
 
 void main() {
@@ -27,7 +28,7 @@ void main() {
 
   test('device not found', () {
     ffi.using((arena) {
-      const dummy = UdevDevice(
+      final dummy = FakeUdevDevice(
         devpath: 'DEVPATH',
         subsystem: 'SUBSYSTEM',
         devtype: 'DEVTYPE',

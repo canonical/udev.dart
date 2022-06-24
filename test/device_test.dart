@@ -1,13 +1,13 @@
 import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart' as ffi;
-import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:udev/src/device.dart';
 import 'package:udev/src/libudev.dart';
 
 import 'mock_libudev.dart';
 import 'test_data.dart';
+import 'test_utils.dart';
 
 void main() {
   test('net/wlan', () {
@@ -20,30 +20,23 @@ void main() {
       );
       overrideLibudevForTesting(udev);
 
-      expect(
-        UdevDevice.fromSyspath(wlp0s20f3.syspath),
-        equals(wlp0s20f3),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final syspath = UdevDevice.fromSyspath(wlp0s20f3.syspath);
+      addTearDown(syspath.dispose);
+      expect(syspath, equalsDevice(wlp0s20f3));
 
-      expect(
-        UdevDevice.fromDevnum(wlp0s20f3.subsystem![0], wlp0s20f3.devnum),
-        equals(wlp0s20f3),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final devnum =
+          UdevDevice.fromDevnum(wlp0s20f3.subsystem![0], wlp0s20f3.devnum);
+      addTearDown(devnum.dispose);
+      expect(devnum, equalsDevice(wlp0s20f3));
 
-      expect(
-        UdevDevice.fromSubsystemSysname(
-            wlp0s20f3.subsystem!, wlp0s20f3.sysname),
-        equals(wlp0s20f3),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final subsystemSysname = UdevDevice.fromSubsystemSysname(
+          wlp0s20f3.subsystem!, wlp0s20f3.sysname);
+      addTearDown(subsystemSysname.dispose);
+      expect(subsystemSysname, equalsDevice(wlp0s20f3));
 
-      expect(
-        UdevDevice.fromDeviceId('n2'),
-        equals(wlp0s20f3),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final deviceId = UdevDevice.fromDeviceId('n2');
+      addTearDown(deviceId.dispose);
+      expect(deviceId, equalsDevice(wlp0s20f3));
     });
   });
 
@@ -57,29 +50,24 @@ void main() {
       );
       overrideLibudevForTesting(udev);
 
-      expect(
-        UdevDevice.fromSyspath(nvme0n1.syspath),
-        equals(nvme0n1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final syspath = UdevDevice.fromSyspath(nvme0n1.syspath);
+      addTearDown(syspath.dispose);
+      expect(syspath, equalsDevice(nvme0n1));
 
-      expect(
-        UdevDevice.fromDevnum(nvme0n1.subsystem![0], nvme0n1.devnum),
-        equals(nvme0n1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final devnum =
+          UdevDevice.fromDevnum(nvme0n1.subsystem![0], nvme0n1.devnum);
+      addTearDown(devnum.dispose);
+      expect(devnum, equalsDevice(nvme0n1));
 
-      expect(
-        UdevDevice.fromSubsystemSysname(nvme0n1.subsystem!, nvme0n1.sysname),
-        equals(nvme0n1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final subsystemSysname =
+          UdevDevice.fromSubsystemSysname(nvme0n1.subsystem!, nvme0n1.sysname);
+      addTearDown(subsystemSysname.dispose);
+      expect(subsystemSysname, equalsDevice(nvme0n1));
 
-      expect(
-        UdevDevice.fromDeviceId('b259:0'), // block<major>:<minor>
-        equals(nvme0n1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final deviceId =
+          UdevDevice.fromDeviceId('b259:0'); // block<major>:<minor>
+      addTearDown(deviceId.dispose);
+      expect(deviceId, equalsDevice(nvme0n1));
     });
   });
 
@@ -93,29 +81,22 @@ void main() {
       );
       overrideLibudevForTesting(udev);
 
-      expect(
-        UdevDevice.fromSyspath(card1.syspath),
-        equals(card1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final syspath = UdevDevice.fromSyspath(card1.syspath);
+      addTearDown(syspath.dispose);
+      expect(syspath, equalsDevice(card1));
 
-      expect(
-        UdevDevice.fromDevnum(card1.subsystem![0], card1.devnum),
-        equals(card1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final devnum = UdevDevice.fromDevnum(card1.subsystem![0], card1.devnum);
+      addTearDown(devnum.dispose);
+      expect(devnum, equalsDevice(card1));
 
-      expect(
-        UdevDevice.fromSubsystemSysname(card1.subsystem!, card1.sysname),
-        equals(card1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final subsystemSysname =
+          UdevDevice.fromSubsystemSysname(card1.subsystem!, card1.sysname);
+      addTearDown(subsystemSysname.dispose);
+      expect(subsystemSysname, equalsDevice(card1));
 
-      expect(
-        UdevDevice.fromDeviceId('sound:card1'),
-        equals(card1),
-      );
-      verify(() => udev.device_unref(dev)).called(1);
+      final deviceId = UdevDevice.fromDeviceId('sound:card1');
+      addTearDown(deviceId.dispose);
+      expect(deviceId, equalsDevice(card1));
     });
   });
 }

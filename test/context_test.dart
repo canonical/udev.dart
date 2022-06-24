@@ -42,6 +42,7 @@ void main() {
           .thenReturn(0);
 
       final context = UdevContext.fromPointer(ctx);
+      addTearDown(context.dispose);
 
       expect(
         context.scanDevices(subsystems: ['net']),

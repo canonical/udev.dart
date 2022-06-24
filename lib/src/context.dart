@@ -9,8 +9,13 @@ import 'list_entry.dart';
 class UdevContext implements ffi.Finalizable {
   factory UdevContext() => UdevContext.fromPointer(udev.new_());
 
-  UdevContext.fromPointer(ffi.Pointer<udev_t> ptr) : _ptr = ptr {
-    _finalizer.attach(this, ptr.cast(), detach: this);
+  UdevContext.fromPointer(this._ptr) {
+    _finalizer.attach(this, _ptr.cast(), detach: this);
+  }
+
+  void dispose() {
+    _finalizer.detach(this);
+    udev.unref(_ptr);
   }
 
   static final _finalizer = ffi.NativeFinalizer(dylib.lookup('udev_unref'));

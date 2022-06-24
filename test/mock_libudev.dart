@@ -25,11 +25,13 @@ MockLibudev createMockLibudev({
 
   final ctxptr = context ?? ffi.Pointer<udev_t>.fromAddress(0x1234);
   when(udev.new_).thenReturn(ctxptr);
+  when(() => udev.ref(ctxptr)).thenReturn(ctxptr);
   when(() => udev.unref(ctxptr)).thenReturn(ffi.nullptr);
 
   final enumptr =
       enumerate ?? ffi.Pointer<udev_enumerate_t>.fromAddress(0x5678);
   when(() => udev.enumerate_new(ctxptr)).thenReturn(enumptr);
+  when(() => udev.enumerate_ref(enumptr)).thenReturn(enumptr);
   when(() => udev.enumerate_unref(enumptr)).thenReturn(ffi.nullptr);
   when(() => udev.enumerate_scan_devices(enumptr)).thenReturn(0);
 
@@ -74,6 +76,7 @@ MockLibudev createMockLibudev({
           )).thenReturn(devptr);
     }
 
+    when(() => udev.device_ref(devptr)).thenReturn(devptr);
     when(() => udev.device_unref(devptr)).thenReturn(ffi.nullptr);
 
     when(() => udev.device_get_devpath(devptr))

@@ -1,6 +1,6 @@
-import 'package:udev/udev.dart';
+import 'fake_device.dart';
 
-const wlp0s20f3 = UdevDevice(
+final wlp0s20f3 = FakeUdevDevice(
   devpath: '/devices/pci0000:00/0000:00:14.3/net/wlp0s20f3',
   subsystem: 'net',
   devtype: 'wlan',
@@ -127,7 +127,7 @@ const wlp0s20f3 = UdevDevice(
   parent: null,
 );
 
-const nvme0n1 = UdevDevice(
+final nvme0n1 = FakeUdevDevice(
   devpath:
       '/devices/pci0000:00/0000:00:0e.0/pci10000:e0/10000:e0:06.0/10000:e1:00.0/nvme/nvme0/nvme0n1',
   subsystem: 'block',
@@ -313,7 +313,7 @@ const nvme0n1 = UdevDevice(
   parent: null,
 );
 
-const card1 = UdevDevice(
+final card1 = FakeUdevDevice(
   devpath:
       '/devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1.1/3-1.1:1.0/sound/card1',
   subsystem: 'sound',
