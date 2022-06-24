@@ -45,6 +45,7 @@ void main() {
         properties: {},
         tags: [],
         sysattrs: {},
+        parent: null,
       );
 
       final libudev = createMockLibudev(

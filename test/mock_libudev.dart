@@ -45,7 +45,7 @@ MockLibudev createMockLibudev({
         )).thenReturn(devptr);
     when(() => libudev.udev_device_new_from_devnum(
           ctxptr,
-          device.subsystem.codeUnits.firstOrNull ?? 0,
+          device.subsystem?.codeUnits.firstOrNull ?? 0,
           device.devnum,
         )).thenReturn(devptr);
     when(() => libudev.udev_device_new_from_subsystem_sysname(
@@ -78,8 +78,8 @@ MockLibudev createMockLibudev({
 
     when(() => libudev.udev_device_get_devpath(devptr))
         .thenReturn(device.devpath.toCString(allocator: allocator));
-    when(() => libudev.udev_device_get_subsystem(devptr))
-        .thenReturn(device.subsystem.toCString(allocator: allocator));
+    when(() => libudev.udev_device_get_subsystem(devptr)).thenReturn(
+        device.subsystem?.toCString(allocator: allocator) ?? ffi.nullptr);
     when(() => libudev.udev_device_get_devtype(devptr)).thenReturn(
         device.devtype?.toCString(allocator: allocator) ?? ffi.nullptr);
     when(() => libudev.udev_device_get_syspath(devptr))
@@ -120,6 +120,8 @@ MockLibudev createMockLibudev({
         _createMockMapEntries(libudev, device.sysattrs, allocator: allocator);
     when(() => libudev.udev_device_get_sysattr_list_entry(devptr))
         .thenReturn(sysattrs);
+
+    when(() => libudev.udev_device_get_parent(devptr)).thenReturn(ffi.nullptr);
   }
 
   return libudev;

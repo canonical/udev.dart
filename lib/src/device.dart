@@ -31,28 +31,8 @@ class UdevDevice {
     required this.properties,
     required this.tags,
     required this.sysattrs,
+    required this.parent,
   });
-
-  factory UdevDevice.fromPointer(ffi.Pointer<udev_device> ptr) {
-    return UdevDevice(
-      devpath: dylib.udev_device_get_devpath(ptr).toDartString()!,
-      subsystem: dylib.udev_device_get_subsystem(ptr).toDartString()!,
-      devtype: dylib.udev_device_get_devtype(ptr).toDartString(),
-      syspath: dylib.udev_device_get_syspath(ptr).toDartString()!,
-      sysname: dylib.udev_device_get_sysname(ptr).toDartString()!,
-      sysnum: dylib.udev_device_get_sysnum(ptr).toDartString(),
-      devnode: dylib.udev_device_get_devnode(ptr).toDartString(),
-      isInitialized: dylib.udev_device_get_is_initialized(ptr) != 0,
-      driver: dylib.udev_device_get_driver(ptr).toDartString(),
-      devnum: dylib.udev_device_get_devnum(ptr),
-      action: dylib.udev_device_get_action(ptr).toDartString(),
-      seqnum: dylib.udev_device_get_seqnum(ptr),
-      devlinks: dylib.udev_device_get_devlinks_list_entry(ptr).toDartList(),
-      properties: dylib.udev_device_get_properties_list_entry(ptr).toDartMap(),
-      tags: dylib.udev_device_get_tags_list_entry(ptr).toDartList(),
-      sysattrs: dylib.udev_device_get_sysattr_list_entry(ptr).toDartMap(),
-    );
-  }
 
   factory UdevDevice.fromSyspath(String syspath, {UdevContext? context}) {
     return ffi.using((arena) {
@@ -123,8 +103,31 @@ class UdevDevice {
     });
   }
 
+  static UdevDevice? fromPointer(ffi.Pointer<udev_device> ptr) {
+    if (ptr == ffi.nullptr) return null;
+    return UdevDevice(
+      devpath: dylib.udev_device_get_devpath(ptr).toDartString()!,
+      subsystem: dylib.udev_device_get_subsystem(ptr).toDartString(),
+      devtype: dylib.udev_device_get_devtype(ptr).toDartString(),
+      syspath: dylib.udev_device_get_syspath(ptr).toDartString()!,
+      sysname: dylib.udev_device_get_sysname(ptr).toDartString()!,
+      sysnum: dylib.udev_device_get_sysnum(ptr).toDartString(),
+      devnode: dylib.udev_device_get_devnode(ptr).toDartString(),
+      isInitialized: dylib.udev_device_get_is_initialized(ptr) != 0,
+      driver: dylib.udev_device_get_driver(ptr).toDartString(),
+      devnum: dylib.udev_device_get_devnum(ptr),
+      action: dylib.udev_device_get_action(ptr).toDartString(),
+      seqnum: dylib.udev_device_get_seqnum(ptr),
+      devlinks: dylib.udev_device_get_devlinks_list_entry(ptr).toDartList(),
+      properties: dylib.udev_device_get_properties_list_entry(ptr).toDartMap(),
+      tags: dylib.udev_device_get_tags_list_entry(ptr).toDartList(),
+      sysattrs: dylib.udev_device_get_sysattr_list_entry(ptr).toDartMap(),
+      parent: fromPointer(dylib.udev_device_get_parent(ptr)),
+    );
+  }
+
   final String devpath;
-  final String subsystem;
+  final String? subsystem;
   final String? devtype;
   final String syspath;
   final String sysname;
@@ -139,6 +142,7 @@ class UdevDevice {
   final Map<String, String?> properties;
   final List<String> tags;
   final Map<String, String?> sysattrs;
+  final UdevDevice? parent;
 
   static UdevDevice? _tryCreate(
     UdevContext? context,
@@ -148,7 +152,6 @@ class UdevDevice {
       final ctx = context ?? UdevContext();
       final ptr = factory(ctx.toPointer());
       if (context == null) ctx.dispose();
-      if (ptr == ffi.nullptr) return null;
       final dev = UdevDevice.fromPointer(ptr);
       dylib.udev_device_unref(ptr);
       return dev;
@@ -157,7 +160,7 @@ class UdevDevice {
 
   @override
   String toString() {
-    return 'UdevDevice(devpath: $devpath, subsystem: $subsystem, devtype: $devtype, syspath: $syspath, sysname: $sysname, sysnum: $sysnum, devnode: $devnode, isInitialized: $isInitialized, driver: $driver, devnum: $devnum, action: $action, seqnum: $seqnum, devlinks: $devlinks, properties: $properties, tags: $tags, sysattrs: $sysattrs)';
+    return 'UdevDevice(devpath: $devpath, subsystem: $subsystem, devtype: $devtype, syspath: $syspath, sysname: $sysname, sysnum: $sysnum, devnode: $devnode, isInitialized: $isInitialized, driver: $driver, devnum: $devnum, action: $action, seqnum: $seqnum, devlinks: $devlinks, properties: $properties, tags: $tags, sysattrs: $sysattrs, parent: $parent)';
   }
 
   @override
@@ -183,7 +186,8 @@ class UdevDevice {
         listEquals(other.devlinks, devlinks) &&
         mapEquals(other.properties, properties) &&
         listEquals(other.tags, tags) &&
-        mapEquals(other.sysattrs, sysattrs);
+        mapEquals(other.sysattrs, sysattrs) &&
+        other.parent == parent;
   }
 
   @override
@@ -208,6 +212,7 @@ class UdevDevice {
       mapHash(properties),
       listHash(tags),
       mapHash(sysattrs),
+      parent,
     );
   }
 }

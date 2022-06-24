@@ -124,6 +124,7 @@ const wlp0s20f3 = UdevDevice(
     'type': null,
     'uevent': null,
   },
+  parent: null,
 );
 
 const nvme0n1 = UdevDevice(
@@ -309,6 +310,7 @@ const nvme0n1 = UdevDevice(
     'uevent': null,
     'wwid': null,
   },
+  parent: null,
 );
 
 const card1 = UdevDevice(
@@ -372,4 +374,5 @@ const card1 = UdevDevice(
     'subsystem': null,
     'uevent': null,
   },
+  parent: null,
 );

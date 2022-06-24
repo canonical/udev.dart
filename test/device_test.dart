@@ -28,13 +28,14 @@ void main() {
       verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
-        UdevDevice.fromDevnum(wlp0s20f3.subsystem[0], wlp0s20f3.devnum),
+        UdevDevice.fromDevnum(wlp0s20f3.subsystem![0], wlp0s20f3.devnum),
         equals(wlp0s20f3),
       );
       verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
-        UdevDevice.fromSubsystemSysname(wlp0s20f3.subsystem, wlp0s20f3.sysname),
+        UdevDevice.fromSubsystemSysname(
+            wlp0s20f3.subsystem!, wlp0s20f3.sysname),
         equals(wlp0s20f3),
       );
       verify(() => libudev.udev_device_unref(dev)).called(1);
@@ -64,13 +65,13 @@ void main() {
       verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
-        UdevDevice.fromDevnum(nvme0n1.subsystem[0], nvme0n1.devnum),
+        UdevDevice.fromDevnum(nvme0n1.subsystem![0], nvme0n1.devnum),
         equals(nvme0n1),
       );
       verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
-        UdevDevice.fromSubsystemSysname(nvme0n1.subsystem, nvme0n1.sysname),
+        UdevDevice.fromSubsystemSysname(nvme0n1.subsystem!, nvme0n1.sysname),
         equals(nvme0n1),
       );
       verify(() => libudev.udev_device_unref(dev)).called(1);
@@ -100,13 +101,13 @@ void main() {
       verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
-        UdevDevice.fromDevnum(card1.subsystem[0], card1.devnum),
+        UdevDevice.fromDevnum(card1.subsystem![0], card1.devnum),
         equals(card1),
       );
       verify(() => libudev.udev_device_unref(dev)).called(1);
 
       expect(
-        UdevDevice.fromSubsystemSysname(card1.subsystem, card1.sysname),
+        UdevDevice.fromSubsystemSysname(card1.subsystem!, card1.sysname),
         equals(card1),
       );
       verify(() => libudev.udev_device_unref(dev)).called(1);
