@@ -11,94 +11,106 @@ import 'test_utils.dart';
 // ignore_for_file: return_of_invalid_type, non_constant_identifier_names
 
 MockLibudev createMockLibudev({
-  ffi.Pointer<udev>? context,
-  Map<ffi.Pointer<udev_device>, UdevDevice> devices = const {},
   required ffi.Allocator allocator,
+  ffi.Pointer<udev>? context,
+  ffi.Pointer<udev_enumerate>? enumerate,
+  List<String> scan = const [],
+  Map<ffi.Pointer<udev_device>, UdevDevice> devices = const {},
 }) {
   final libudev = MockLibudev();
 
-  final ctx = ffi.Pointer<udev>.fromAddress(0xc);
-  when(libudev.udev_new()).thenReturn(ctx);
-  when(libudev.udev_unref(ctx)).thenReturn(ffi.nullptr);
+  final ctxptr = context ?? ffi.Pointer<udev>.fromAddress(0x1234);
+  when(libudev.udev_new()).thenReturn(ctxptr);
+  when(libudev.udev_unref(ctxptr)).thenReturn(ffi.nullptr);
+
+  final enumptr = enumerate ?? ffi.Pointer<udev_enumerate>.fromAddress(0x5678);
+  when(libudev.udev_enumerate_new(ctxptr)).thenReturn(enumptr);
+  when(libudev.udev_enumerate_unref(enumptr)).thenReturn(ffi.nullptr);
+  when(libudev.udev_enumerate_scan_devices(enumerate)).thenReturn(0);
+
+  final results = _createMockListEntries(libudev, scan, allocator: allocator);
+  when(libudev.udev_enumerate_get_list_entry(enumptr)).thenReturn(results);
 
   for (final entry in devices.entries) {
-    final ptr = entry.key;
+    final devptr = entry.key;
     final device = entry.value;
     when(libudev.udev_device_new_from_syspath(
-      ctx,
+      ctxptr,
       argThat(isCString(device.syspath)),
-    )).thenReturn(ptr);
+    )).thenReturn(devptr);
     when(libudev.udev_device_new_from_devnum(
-      ctx,
+      ctxptr,
       device.subsystem.codeUnits.firstOrNull,
       device.devnum,
-    )).thenReturn(ptr);
+    )).thenReturn(devptr);
     when(libudev.udev_device_new_from_subsystem_sysname(
-      ctx,
+      ctxptr,
       argThat(isCString(device.subsystem)),
       argThat(isCString(device.sysname)),
-    )).thenReturn(ptr);
+    )).thenReturn(devptr);
 
     if (device.properties.containsKey('IFINDEX')) {
       when(libudev.udev_device_new_from_device_id(
-        ctx,
+        ctxptr,
         argThat(isCString('n${device.properties['IFINDEX']}')),
-      )).thenReturn(ptr);
+      )).thenReturn(devptr);
     } else if (device.properties.containsKey('MAJOR') &&
         device.properties.containsKey('MINOR')) {
       when(libudev.udev_device_new_from_device_id(
-        ctx,
+        ctxptr,
         argThat(isCString(
             'b${device.properties['MAJOR']}:${device.properties['MINOR']}')),
-      )).thenReturn(ptr);
+      )).thenReturn(devptr);
     } else {
       when(libudev.udev_device_new_from_device_id(
-        ctx,
+        ctxptr,
         argThat(isCString('${device.subsystem}:${device.sysname}')),
-      )).thenReturn(ptr);
+      )).thenReturn(devptr);
     }
 
-    when(libudev.udev_device_unref(ptr)).thenReturn(ffi.nullptr);
+    when(libudev.udev_device_unref(devptr)).thenReturn(ffi.nullptr);
 
-    when(libudev.udev_device_get_devpath(ptr))
+    when(libudev.udev_device_get_devpath(devptr))
         .thenReturn(device.devpath.toCString(allocator: allocator));
-    when(libudev.udev_device_get_subsystem(ptr))
+    when(libudev.udev_device_get_subsystem(devptr))
         .thenReturn(device.subsystem.toCString(allocator: allocator));
-    when(libudev.udev_device_get_devtype(ptr)).thenReturn(
+    when(libudev.udev_device_get_devtype(devptr)).thenReturn(
         device.devtype?.toCString(allocator: allocator) ?? ffi.nullptr);
-    when(libudev.udev_device_get_syspath(ptr))
+    when(libudev.udev_device_get_syspath(devptr))
         .thenReturn(device.syspath.toCString(allocator: allocator));
-    when(libudev.udev_device_get_sysname(ptr))
+    when(libudev.udev_device_get_sysname(devptr))
         .thenReturn(device.sysname.toCString(allocator: allocator));
-    when(libudev.udev_device_get_sysnum(ptr)).thenReturn(
+    when(libudev.udev_device_get_sysnum(devptr)).thenReturn(
         device.sysnum?.toCString(allocator: allocator) ?? ffi.nullptr);
-    when(libudev.udev_device_get_devnode(ptr)).thenReturn(
+    when(libudev.udev_device_get_devnode(devptr)).thenReturn(
         device.devnode?.toCString(allocator: allocator) ?? ffi.nullptr);
-    when(libudev.udev_device_get_is_initialized(ptr))
+    when(libudev.udev_device_get_is_initialized(devptr))
         .thenReturn(device.isInitialized ? 1 : 0);
-    when(libudev.udev_device_get_driver(ptr)).thenReturn(
+    when(libudev.udev_device_get_driver(devptr)).thenReturn(
         device.driver?.toCString(allocator: allocator) ?? ffi.nullptr);
-    when(libudev.udev_device_get_devnum(ptr)).thenReturn(device.devnum);
-    when(libudev.udev_device_get_action(ptr)).thenReturn(
+    when(libudev.udev_device_get_devnum(devptr)).thenReturn(device.devnum);
+    when(libudev.udev_device_get_action(devptr)).thenReturn(
         device.action?.toCString(allocator: allocator) ?? ffi.nullptr);
-    when(libudev.udev_device_get_seqnum(ptr)).thenReturn(device.seqnum);
+    when(libudev.udev_device_get_seqnum(devptr)).thenReturn(device.seqnum);
 
     final devlinks =
         _createMockListEntries(libudev, device.devlinks, allocator: allocator);
-    when(libudev.udev_device_get_devlinks_list_entry(ptr)).thenReturn(devlinks);
+    when(libudev.udev_device_get_devlinks_list_entry(devptr))
+        .thenReturn(devlinks);
 
     final properties =
         _createMockMapEntries(libudev, device.properties, allocator: allocator);
-    when(libudev.udev_device_get_properties_list_entry(ptr))
+    when(libudev.udev_device_get_properties_list_entry(devptr))
         .thenReturn(properties);
 
     final tags =
         _createMockListEntries(libudev, device.tags, allocator: allocator);
-    when(libudev.udev_device_get_tags_list_entry(ptr)).thenReturn(tags);
+    when(libudev.udev_device_get_tags_list_entry(devptr)).thenReturn(tags);
 
     final sysattrs =
         _createMockMapEntries(libudev, device.sysattrs, allocator: allocator);
-    when(libudev.udev_device_get_sysattr_list_entry(ptr)).thenReturn(sysattrs);
+    when(libudev.udev_device_get_sysattr_list_entry(devptr))
+        .thenReturn(sysattrs);
   }
 
   return libudev;
@@ -151,6 +163,84 @@ class MockLibudev extends Mock implements Libudev {
   @override
   ffi.Pointer<udev> udev_unref(ffi.Pointer<udev>? udev) {
     return super.noSuchMethod(Invocation.method(#udev_unref, [udev]),
+        returnValue: ffi.nullptr);
+  }
+
+  @override
+  ffi.Pointer<udev_enumerate> udev_enumerate_new(ffi.Pointer<udev>? udev) {
+    return super.noSuchMethod(Invocation.method(#udev_enumerate_new, [udev]),
+        returnValue: ffi.nullptr);
+  }
+
+  @override
+  ffi.Pointer<udev_enumerate> udev_enumerate_unref(
+      ffi.Pointer<udev_enumerate>? udev_enumerate) {
+    return super.noSuchMethod(Invocation.method(#udev_enumerate_unref, [udev]),
+        returnValue: ffi.nullptr);
+  }
+
+  @override
+  int udev_enumerate_add_match_sysname(
+      ffi.Pointer<udev_enumerate>? udev_enumerate,
+      ffi.Pointer<ffi.Char>? sysname) {
+    return super.noSuchMethod(
+        Invocation.method(
+            #udev_enumerate_add_match_sysname, [udev_enumerate, sysname]),
+        returnValue: 0);
+  }
+
+  @override
+  int udev_enumerate_add_match_subsystem(
+      ffi.Pointer<udev_enumerate>? udev_enumerate,
+      ffi.Pointer<ffi.Char>? subsystem) {
+    return super.noSuchMethod(
+        Invocation.method(
+            #udev_enumerate_add_match_subsystem, [udev_enumerate, subsystem]),
+        returnValue: 0);
+  }
+
+  @override
+  int udev_enumerate_add_match_tag(
+      ffi.Pointer<udev_enumerate>? udev_enumerate, ffi.Pointer<ffi.Char>? tag) {
+    return super.noSuchMethod(
+        Invocation.method(#udev_enumerate_add_match_tag, [udev_enumerate, tag]),
+        returnValue: 0);
+  }
+
+  @override
+  int udev_enumerate_add_match_property(
+      ffi.Pointer<udev_enumerate>? udev_enumerate,
+      ffi.Pointer<ffi.Char>? property,
+      ffi.Pointer<ffi.Char>? value) {
+    return super.noSuchMethod(
+        Invocation.method(#udev_enumerate_add_match_property,
+            [udev_enumerate, property, value]),
+        returnValue: 0);
+  }
+
+  @override
+  int udev_enumerate_add_match_sysattr(
+      ffi.Pointer<udev_enumerate>? udev_enumerate,
+      ffi.Pointer<ffi.Char>? sysattr,
+      ffi.Pointer<ffi.Char>? value) {
+    return super.noSuchMethod(
+        Invocation.method(#udev_enumerate_add_match_sysattr,
+            [udev_enumerate, sysattr, value]),
+        returnValue: 0);
+  }
+
+  @override
+  int udev_enumerate_scan_devices(ffi.Pointer<udev_enumerate>? udev_enumerate) {
+    return super.noSuchMethod(
+        Invocation.method(#udev_enumerate_scan_devices, [udev_enumerate]),
+        returnValue: 0);
+  }
+
+  @override
+  ffi.Pointer<udev_list_entry> udev_enumerate_get_list_entry(
+      ffi.Pointer<udev_enumerate> udev_enumerate) {
+    return super.noSuchMethod(
+        Invocation.method(#udev_enumerate_get_list_entry, [udev_enumerate]),
         returnValue: ffi.nullptr);
   }
 

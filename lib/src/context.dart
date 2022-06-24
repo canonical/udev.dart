@@ -1,14 +1,12 @@
 import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart' as ffi;
-import 'package:meta/meta.dart';
 
 import 'bindings.g.dart';
 import 'dylib.dart';
 import 'extensions.dart';
 import 'list_entry.dart';
 
-@immutable
 class UdevContext {
   factory UdevContext() => UdevContext.fromPointer(dylib.udev_new());
 
@@ -59,13 +57,4 @@ class UdevContext {
   }
 
   void dispose() => dylib.udev_unref(_ptr);
-
-  @override
-  int get hashCode => _ptr.hashCode;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is UdevContext && _ptr == other._ptr;
-  }
 }
