@@ -16,6 +16,4 @@ void main() {
     'VENDOR': devices.map((d) => d.vendor),
     'MODEL': devices.map((d) => d.model),
   });
-
-  context.dispose();
 }

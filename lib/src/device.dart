@@ -150,7 +150,6 @@ class UdevDevice {
     return ffi.using((arena) {
       final ctx = context ?? UdevContext();
       final ptr = factory(ctx.toPointer());
-      if (context == null) ctx.dispose();
       final dev = UdevDevice.fromPointer(ptr);
       udev.device_unref(ptr);
       return dev;

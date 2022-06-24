@@ -6,10 +6,14 @@ import 'extensions.dart';
 import 'libudev.dart';
 import 'list_entry.dart';
 
-class UdevContext {
+class UdevContext implements ffi.Finalizable {
   factory UdevContext() => UdevContext.fromPointer(udev.new_());
 
-  const UdevContext.fromPointer(ffi.Pointer<udev_t> ptr) : _ptr = ptr;
+  UdevContext.fromPointer(ffi.Pointer<udev_t> ptr) : _ptr = ptr {
+    _finalizer.attach(this, ptr.cast(), detach: this);
+  }
+
+  static final _finalizer = ffi.NativeFinalizer(dylib.lookup('udev_unref'));
 
   ffi.Pointer<udev_t> toPointer() => _ptr;
 
@@ -53,6 +57,4 @@ class UdevContext {
       return devices;
     });
   }
-
-  void dispose() => udev.unref(_ptr);
 }
