@@ -103,6 +103,8 @@ class UdevDevice implements ffi.Finalizable {
   int get devnum => udev.device_get_devnum(_ptr);
   String? get action => udev.device_get_action(_ptr).toDartString();
   int get seqnum => udev.device_get_seqnum(_ptr);
+  Duration get timeSinceInitialized =>
+      Duration(microseconds: udev.device_get_usec_since_initialized(_ptr));
   Iterable<String> get devlinks => _UdevDevlinks(_ptr);
   Map<String, String?> get properties => UdevPropertyMap(_ptr);
   Iterable<String> get tags => _UdevTags(_ptr);
