@@ -141,8 +141,18 @@ class _UdevDevlinks extends UdevIterable implements ffi.Finalizable {
 }
 
 class _UdevTags extends UdevIterable implements ffi.Finalizable {
-  _UdevTags(ffi.Pointer<udev_device_t> ptr)
-      : super(udev.device_get_tags_list_entry(ptr)) {
-    finalizer.attach(this, udev.device_ref(ptr));
+  _UdevTags(this._ptr) : super(udev.device_get_tags_list_entry(_ptr)) {
+    finalizer.attach(this, udev.device_ref(_ptr));
+  }
+
+  final ffi.Pointer<udev_device_t> _ptr;
+
+  @override
+  bool contains(Object? element) {
+    if (element is! String) return false;
+    return ffi.using((arena) {
+      final ctag = element.toCString(allocator: arena);
+      return udev.device_has_tag(_ptr, ctag) != 0;
+    });
   }
 }
