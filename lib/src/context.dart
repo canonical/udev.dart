@@ -8,17 +8,25 @@ import 'libudev.dart';
 import 'list_entry.dart';
 
 class UdevContext implements ffi.Finalizable {
-  factory UdevContext() => UdevContext.fromPointer(udev.new_()).._unref();
+  factory UdevContext() {
+    final ptr = udev.new_();
+    final context = UdevContext.fromPointer(ptr);
+    udev.unref(ptr);
+    return context;
+  }
 
-  UdevContext.fromPointer(this._ptr) {
+  UdevContext._(this._ptr) {
     finalizer.attach(this, udev.ref(_ptr));
   }
 
-  void _unref() => udev.unref(_ptr);
+  final ffi.Pointer<udev_t> _ptr;
+
+  static UdevContext fromPointer(ffi.Pointer<udev_t> ptr) {
+    assert(ptr != ffi.nullptr);
+    return UdevContext._(ptr);
+  }
 
   ffi.Pointer<udev_t> toPointer() => _ptr;
-
-  final ffi.Pointer<udev_t> _ptr;
 
   Iterable<String> scanDevices({
     List<String> subsystems = const [],
