@@ -130,6 +130,13 @@ class UdevDevice implements ffi.Finalizable {
   final ffi.Pointer<udev_device_t> _ptr;
 
   @override
+  bool operator ==(Object other) =>
+      other is UdevDevice && other.syspath == syspath;
+
+  @override
+  int get hashCode => syspath.hashCode;
+
+  @override
   String toString() => 'UdevDevice(syspath: $syspath)';
 }
 
