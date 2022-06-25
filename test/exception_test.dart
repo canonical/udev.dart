@@ -56,27 +56,27 @@ void main() {
       overrideLibudevForTesting(libudev);
 
       expect(
-        () => UdevDevice.fromSyspath('SYSPATH'),
+        () => UdevDevices.fromSyspath('SYSPATH'),
         throwsA(isA<UdevSyspathException>()
             .having((e) => e.syspath, 'syspath', 'SYSPATH')),
       );
 
       expect(
-        () => UdevDevice.fromDevnum('S', 123),
+        () => UdevDevices.fromDevnum('S', 123),
         throwsA(isA<UdevDevnumException>()
             .having((e) => e.type, 'type', 'S')
             .having((e) => e.devnum, 'devnum', 123)),
       );
 
       expect(
-        () => UdevDevice.fromSubsystemSysname('SUBSYSTEM', 'SYSNAME'),
+        () => UdevDevices.fromSubsystemSysname('SUBSYSTEM', 'SYSNAME'),
         throwsA(isA<UdevSubsystemSysnameException>()
             .having((e) => e.subsystem, 'subsystem', 'SUBSYSTEM')
             .having((e) => e.sysname, 'sysname', 'SYSNAME')),
       );
 
       expect(
-        () => UdevDevice.fromDeviceId('SUBSYSTEM:SYSNAME'),
+        () => UdevDevices.fromDeviceId('SUBSYSTEM:SYSNAME'),
         throwsA(isA<UdevDeviceIdException>()
             .having((e) => e.id, 'id', 'SUBSYSTEM:SYSNAME')),
       );

@@ -9,10 +9,10 @@
 
 ```dart
 void main() {
-  print(UdevDevice.fromSyspath('/sys/devices/<...>'));
-  print(UdevDevice.fromDevnum('b', 66304));
-  print(UdevDevice.fromSubsystemSysname('net', 'eth0'));
-  print(UdevDevice.fromDeviceId('c128:1'));
+  print(UdevDevices.fromSyspath('/sys/devices/<...>'));
+  print(UdevDevices.fromDevnum('b', 66304));
+  print(UdevDevices.fromSubsystemSysname('net', 'eth0'));
+  print(UdevDevices.fromDeviceId('c128:1'));
 }
 ```
 
@@ -24,7 +24,7 @@ void main() {
 
   final syspaths = context.scanDevices(subsystems: ['net']);
   for (final syspath in syspaths) {
-    final device = UdevDevice.fromSyspath(syspath, context: context);
+    final device = UdevDevices.fromSyspath(syspath, context: context);
     print(device);
   }
 }

@@ -1,11 +1,8 @@
 import 'dart:ffi' as ffi;
-import 'dart:io';
 
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
-import 'context.dart';
-import 'exception.dart';
 import 'extensions.dart';
 import 'finalizer.dart';
 import 'libudev.dart';
@@ -17,79 +14,14 @@ class UdevDevice implements ffi.Finalizable {
     finalizer.attach(this, udev.device_ref(_ptr));
   }
 
-  factory UdevDevice.fromSyspath(String syspath, {UdevContext? context}) {
-    return ffi.using((arena) {
-      final csyspath = syspath.toCString(allocator: arena);
-      final dev = _tryCreate(
-        context,
-        (ctx) => udev.device_new_from_syspath(ctx, csyspath),
-      );
-      return dev.orThrowIfNull(UdevSyspathException(syspath));
-    });
-  }
-
-  factory UdevDevice.fromDevnum(
-    String type,
-    int devnum, {
-    UdevContext? context,
-  }) {
-    return ffi.using((arena) {
-      assert(type.length == 1, type);
-      final ctype = type.codeUnitAt(0);
-      final dev = _tryCreate(
-        context,
-        (ctx) => udev.device_new_from_devnum(ctx, ctype, devnum),
-      );
-      return dev.orThrowIfNull(UdevDevnumException(type, devnum));
-    });
-  }
-
-  factory UdevDevice.fromSubsystemSysname(
-    String subsystem,
-    String sysname, {
-    UdevContext? context,
-  }) {
-    return ffi.using((arena) {
-      final csubsystem = subsystem.toCString(allocator: arena);
-      final csysname = sysname.toCString(allocator: arena);
-      final dev = _tryCreate(
-        context,
-        (ctx) => udev.device_new_from_subsystem_sysname(
-          ctx,
-          csubsystem,
-          csysname,
-        ),
-      );
-      return dev
-          .orThrowIfNull(UdevSubsystemSysnameException(subsystem, sysname));
-    });
-  }
-
-  factory UdevDevice.fromDeviceId(String id, {UdevContext? context}) {
-    return ffi.using((arena) {
-      final cid = id.toCString(allocator: arena);
-      final dev = _tryCreate(
-        context,
-        (ctx) => udev.device_new_from_device_id(ctx, cid),
-      );
-      return dev.orThrowIfNull(UdevDeviceIdException(id));
-    });
-  }
-
-  factory UdevDevice.fromEnvironment({UdevContext? context}) {
-    return ffi.using((arena) {
-      final dev = _tryCreate(
-        context,
-        (ctx) => udev.device_new_from_environment(ctx),
-      );
-      return dev.orThrowIfNull(UdevEnvironmentException(Platform.environment));
-    });
-  }
+  final ffi.Pointer<udev_device_t> _ptr;
 
   static UdevDevice? fromPointer(ffi.Pointer<udev_device_t> ptr) {
     if (ptr == ffi.nullptr) return null;
     return UdevDevice._(ptr);
   }
+
+  ffi.Pointer<udev_device_t> toPointer() => _ptr;
 
   String get devpath => udev.device_get_devpath(_ptr).toDartString()!;
   String? get subsystem => udev.device_get_subsystem(_ptr).toDartString();
@@ -111,23 +43,6 @@ class UdevDevice implements ffi.Finalizable {
   Map<String, String?> get sysattrs => UdevSysattrMap(_ptr);
   UdevDevice? get parent =>
       UdevDevice.fromPointer(udev.device_get_parent(_ptr));
-
-  static UdevDevice? _tryCreate(
-    UdevContext? context,
-    ffi.Pointer<udev_device_t> Function(ffi.Pointer<udev_t> ctx) factory,
-  ) {
-    return ffi.using((arena) {
-      final ctx = context ?? UdevContext();
-      final ptr = factory(ctx.toPointer());
-      final dev = UdevDevice.fromPointer(ptr);
-      udev.device_unref(ptr);
-      return dev;
-    });
-  }
-
-  ffi.Pointer<udev_device_t> toPointer() => _ptr;
-
-  final ffi.Pointer<udev_device_t> _ptr;
 
   @override
   bool operator ==(Object other) =>

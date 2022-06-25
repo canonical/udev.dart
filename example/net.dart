@@ -7,7 +7,7 @@ void main() {
 
   final syspaths = context.scanDevices(subsystems: ['net']);
   final devices = syspaths
-      .map((syspath) => UdevDevice.fromSyspath(syspath, context: context))
+      .map((syspath) => UdevDevices.fromSyspath(syspath, context: context))
       .where((device) => device.devtype != null);
 
   printTable({
