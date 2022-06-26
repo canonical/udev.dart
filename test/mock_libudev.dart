@@ -33,13 +33,12 @@ MockLibudev createMockLibudev({
 
   overrideFinalizerForTesting(FakeUdevFinalizer());
 
-  final ctxptr = context ?? ffi.Pointer<udev_t>.fromAddress(0x1234);
+  final ctxptr = context ?? ffi.Pointer<udev_t>.fromAddress(0x123);
   when(udev.new_).thenReturn(ctxptr);
   when(() => udev.ref(ctxptr)).thenReturn(ctxptr);
   when(() => udev.unref(ctxptr)).thenReturn(ffi.nullptr);
 
-  final enumptr =
-      enumerate ?? ffi.Pointer<udev_enumerate_t>.fromAddress(0x5678);
+  final enumptr = enumerate ?? ffi.Pointer<udev_enumerate_t>.fromAddress(0x456);
   when(() => udev.enumerate_new(ctxptr)).thenReturn(enumptr);
   when(() => udev.enumerate_ref(enumptr)).thenReturn(enumptr);
   when(() => udev.enumerate_unref(enumptr)).thenReturn(ffi.nullptr);

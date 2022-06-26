@@ -17,6 +17,7 @@ final _finalizers = {
   udev_t: ffi.NativeFinalizer(dylib.lookup('udev_unref')),
   udev_device_t: ffi.NativeFinalizer(dylib.lookup('udev_device_unref')),
   udev_enumerate_t: ffi.NativeFinalizer(dylib.lookup('udev_enumerate_unref')),
+  udev_monitor_t: ffi.NativeFinalizer(dylib.lookup('udev_monitor_unref')),
 };
 
 class UdevFinalizer {

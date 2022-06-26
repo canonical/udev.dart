@@ -12,6 +12,7 @@ dependencies:
   collection: ^1.16.0
   ffi: ^2.0.1
   meta: ^1.7.0
+  stdlibc: ^0.0.5
 
 dev_dependencies:
   ffigen: ^6.0.1
