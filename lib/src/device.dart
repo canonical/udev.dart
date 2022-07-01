@@ -41,8 +41,31 @@ class UdevDevice implements ffi.Finalizable {
   Map<String, String?> get properties => UdevPropertyMap(_ptr);
   Iterable<String> get tags => _UdevTags(_ptr);
   Map<String, String?> get sysattrs => UdevSysattrMap(_ptr);
-  UdevDevice? get parent =>
-      UdevDevice.fromPointer(udev.device_get_parent(_ptr));
+
+  /* udev_device_get_parent_*() does not take a reference on the returned device, it is automatically unref'd with the parent */
+  UdevDevice? getParent() {
+    return UdevDevice.fromPointer(udev.device_get_parent(_ptr));
+  }
+
+  UdevDevice? getParentWithSubsystemDevtype(String subsystem) {
+    return ffi.using((arena) {
+      final csubsystem = subsystem.toCString(allocator: arena);
+      return UdevDevice.fromPointer(
+          udev.device_get_parent_with_subsystem_devtype(
+        _ptr,
+        csubsystem,
+        ffi.nullptr /*FIXME*/,
+      ));
+    });
+  }
+
+  String? getSysattrValue(String sysattr) {
+    return ffi.using((arena) {
+      final csysattr = sysattr.toCString(allocator: arena);
+      final sysattrPtr = udev.device_get_sysattr_value(_ptr, csysattr);
+      return sysattrPtr.toDartString();
+    });
+  }
 
   @override
   bool operator ==(Object other) =>
