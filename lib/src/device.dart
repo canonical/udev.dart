@@ -100,14 +100,18 @@ class UdevDevice implements ffi.Finalizable {
   UdevDevice? get parent =>
       UdevDevice.fromPointer(udev.device_get_parent(_ptr));
 
-  UdevDevice? getParentWithSubsystemDevtype(String subsystem) {
+  UdevDevice? getParentWithSubsystemDevtype(
+    String subsystem, [
+    String? devtype,
+  ]) {
     return ffi.using((arena) {
       final csubsystem = subsystem.toCString(allocator: arena);
+      final cdevtype = devtype?.toCString(allocator: arena) ?? ffi.nullptr;
       return UdevDevice.fromPointer(
           udev.device_get_parent_with_subsystem_devtype(
         _ptr,
         csubsystem,
-        ffi.nullptr /*FIXME*/,
+        cdevtype,
       ));
     });
   }
