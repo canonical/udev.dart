@@ -44,6 +44,18 @@ class UdevDevice implements ffi.Finalizable {
   UdevDevice? get parent =>
       UdevDevice.fromPointer(udev.device_get_parent(_ptr));
 
+  UdevDevice? getParentWithSubsystemDevtype(String subsystem) {
+    return ffi.using((arena) {
+      final csubsystem = subsystem.toCString(allocator: arena);
+      return UdevDevice.fromPointer(
+          udev.device_get_parent_with_subsystem_devtype(
+        _ptr,
+        csubsystem,
+        ffi.nullptr /*FIXME*/,
+      ));
+    });
+  }
+
   @override
   bool operator ==(Object other) =>
       other is UdevDevice && other.syspath == syspath;
