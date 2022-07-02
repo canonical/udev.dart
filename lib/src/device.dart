@@ -56,14 +56,6 @@ class UdevDevice implements ffi.Finalizable {
     });
   }
 
-  String? getSysattrValue(String sysattr) {
-    return ffi.using((arena) {
-      final csysattr = sysattr.toCString(allocator: arena);
-      final sysattrPtr = udev.device_get_sysattr_value(_ptr, csysattr);
-      return sysattrPtr.toDartString();
-    });
-  }
-
   @override
   bool operator ==(Object other) =>
       other is UdevDevice && other.syspath == syspath;
