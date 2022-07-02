@@ -1,6 +1,7 @@
 import 'dart:ffi' as ffi;
 
 import 'package:ffi/ffi.dart' as ffi;
+import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:udev/src/devices.dart';
 import 'package:udev/src/libudev.dart';
@@ -89,6 +90,33 @@ void main() {
       );
 
       expect(UdevDevices.fromDeviceId('sound:card1'), equalsDevice(card1));
+    });
+  });
+
+  test('find parent', () {
+    ffi.using((arena) {
+      final dev = ffi.Pointer<udev_device_t>.fromAddress(0xd);
+      final udev = createMockLibudev(
+        allocator: arena,
+        context: ffi.Pointer<udev_t>.fromAddress(0xc),
+        devices: {dev: nvme0n1},
+      );
+      overrideLibudevForTesting(udev);
+
+      when(() => udev.device_get_parent_with_subsystem_devtype(
+          dev,
+          any(that: isCString('subsystem')),
+          any(that: isCString('devtype')))).thenReturn(ffi.nullptr);
+
+      final device = UdevDevices.fromSyspath(nvme0n1.syspath);
+      expect(
+        device.getParentWithSubsystemDevtype('subsystem', 'devtype'),
+        isNull,
+      );
+
+      verify(() =>
+              udev.device_get_parent_with_subsystem_devtype(dev, any(), any()))
+          .called(1);
     });
   });
 }
