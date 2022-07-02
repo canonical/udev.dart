@@ -41,11 +41,8 @@ class UdevDevice implements ffi.Finalizable {
   Map<String, String?> get properties => UdevPropertyMap(_ptr);
   Iterable<String> get tags => _UdevTags(_ptr);
   Map<String, String?> get sysattrs => UdevSysattrMap(_ptr);
-
-  /* udev_device_get_parent_*() does not take a reference on the returned device, it is automatically unref'd with the parent */
-  UdevDevice? getParent() {
-    return UdevDevice.fromPointer(udev.device_get_parent(_ptr));
-  }
+  UdevDevice? get parent =>
+      UdevDevice.fromPointer(udev.device_get_parent(_ptr));
 
   UdevDevice? getParentWithSubsystemDevtype(String subsystem) {
     return ffi.using((arena) {
