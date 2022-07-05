@@ -13,6 +13,8 @@ final wlp0s20f3 = FakeUdevDevice(
   devnum: 0,
   action: null,
   seqnum: 0,
+  timeSinceInitialized:
+      const Duration(hours: 8, minutes: 39, seconds: 26, microseconds: 405953),
   devlinks: [],
   properties: {
     'CURRENT_TAGS': ':systemd:',
@@ -142,6 +144,8 @@ final nvme0n1 = FakeUdevDevice(
   devnum: 66304,
   action: null,
   seqnum: 0,
+  timeSinceInitialized:
+      const Duration(hours: 8, minutes: 43, seconds: 58, microseconds: 134597),
   devlinks: [
     '/dev/disk/by-id/nvme-CA6-8D2048-Q11_NVMe_SSSTC_2048GB_TW0YFGP39DH0024K01DJ',
     '/dev/disk/by-id/nvme-eui.38f601563151e322',
@@ -328,6 +332,8 @@ final card1 = FakeUdevDevice(
   devnum: 0,
   action: null,
   seqnum: 0,
+  timeSinceInitialized:
+      const Duration(hours: 2, minutes: 24, seconds: 07, microseconds: 243118),
   devlinks: [],
   properties: {
     'CURRENT_TAGS': ':seat:',

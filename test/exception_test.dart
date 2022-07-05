@@ -41,6 +41,7 @@ void main() {
         devnum: 123,
         action: null,
         seqnum: 0,
+        timeSinceInitialized: Duration.zero,
         devlinks: [],
         properties: {},
         tags: [],

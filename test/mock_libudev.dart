@@ -110,6 +110,8 @@ MockLibudev createMockLibudev({
     when(() => udev.device_get_action(devptr)).thenReturn(
         device.action?.toCString(allocator: allocator) ?? ffi.nullptr);
     when(() => udev.device_get_seqnum(devptr)).thenReturn(device.seqnum);
+    when(() => udev.device_get_usec_since_initialized(devptr))
+        .thenReturn(device.timeSinceInitialized.inMicroseconds);
 
     final devlinks =
         _createMockListEntries(udev, device.devlinks, allocator: allocator);

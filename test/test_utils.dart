@@ -32,6 +32,8 @@ Matcher equalsDevice(UdevDevice device) {
       .having((d) => d.devnum, 'devnum', device.devnum)
       .having((d) => d.action, 'action', device.action)
       .having((d) => d.seqnum, 'seqnum', device.seqnum)
+      .having((d) => d.timeSinceInitialized, 'timeSinceInitialized',
+          device.timeSinceInitialized)
       .having((d) => d.devlinks, 'devlinks', device.devlinks)
       .having((d) => d.properties, 'properties', device.properties)
       .having((d) => d.tags, 'tags', device.tags)

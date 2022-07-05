@@ -15,6 +15,7 @@ class FakeUdevDevice extends Fake implements UdevDevice {
     required this.devnum,
     required this.action,
     required this.seqnum,
+    required this.timeSinceInitialized,
     required this.devlinks,
     required this.properties,
     required this.tags,
@@ -46,6 +47,8 @@ class FakeUdevDevice extends Fake implements UdevDevice {
   final String? action;
   @override
   final int seqnum;
+  @override
+  final Duration timeSinceInitialized;
   @override
   final List<String> devlinks;
   @override
