@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:stdlibc/stdlibc.dart';
 
 @immutable
 class UdevException implements Exception {
@@ -18,6 +19,12 @@ class UdevException implements Exception {
     if (runtimeType != other.runtimeType) return false;
     return other is UdevException && other.message == message;
   }
+}
+
+class UdevErrnoException extends UdevException {
+  UdevErrnoException(this.errno) : super('$errno: ${strerror(errno)}');
+
+  final int errno;
 }
 
 @immutable

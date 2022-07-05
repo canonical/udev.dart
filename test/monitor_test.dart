@@ -6,6 +6,7 @@ import 'package:stdlibc/stdlibc.dart';
 import 'package:test/test.dart';
 import 'package:udev/src/context.dart';
 import 'package:udev/src/device.dart';
+import 'package:udev/src/exception.dart';
 import 'package:udev/src/libudev.dart';
 import 'package:udev/src/monitor.dart';
 
@@ -64,6 +65,65 @@ void main() {
       verify(() => udev.monitor_filter_add_match_tag(monitor, any())).called(1);
       verify(() => udev.monitor_enable_receiving(monitor)).called(1);
       verify(() => udev.monitor_get_fd(monitor)).called(1);
+    });
+  });
+
+  test('invalid buffer size', () async {
+    await ffi.using((arena) async {
+      final ctx = ffi.Pointer<udev_t>.fromAddress(0xc);
+      final dev = ffi.Pointer<udev_device_t>.fromAddress(0xd);
+      final monitor = ffi.Pointer<udev_monitor_t>.fromAddress(0xe);
+
+      final udev = createMockLibudev(
+        allocator: arena,
+        context: ctx,
+        devices: {dev: wlp0s20f3},
+      );
+      overrideLibudevForTesting(udev);
+
+      when(() =>
+              udev.monitor_new_from_netlink(ctx, any(that: isCString('udev'))))
+          .thenReturn(monitor);
+      when(() => udev.monitor_unref(monitor)).thenReturn(ffi.nullptr);
+      when(() => udev.monitor_set_receive_buffer_size(monitor, -123))
+          .thenReturn(-456);
+
+      final context = UdevContext.fromPointer(ctx);
+      await expectLater(
+          () => context.monitorDevices(bufferSize: -123).first,
+          throwsA(
+              isA<UdevErrnoException>().having((e) => e.errno, 'errno', 456)));
+
+      verify(() => udev.monitor_unref(monitor)).called(1);
+    });
+  });
+
+  test('error receiving', () async {
+    await ffi.using((arena) async {
+      final ctx = ffi.Pointer<udev_t>.fromAddress(0xc);
+      final dev = ffi.Pointer<udev_device_t>.fromAddress(0xd);
+      final monitor = ffi.Pointer<udev_monitor_t>.fromAddress(0xe);
+
+      final udev = createMockLibudev(
+        allocator: arena,
+        context: ctx,
+        devices: {dev: wlp0s20f3},
+      );
+      overrideLibudevForTesting(udev);
+
+      when(() =>
+              udev.monitor_new_from_netlink(ctx, any(that: isCString('udev'))))
+          .thenReturn(monitor);
+      when(() => udev.monitor_unref(monitor)).thenReturn(ffi.nullptr);
+      when(() => udev.monitor_enable_receiving(monitor)).thenReturn(-123);
+
+      final context = UdevContext.fromPointer(ctx);
+      await expectLater(
+          () => context.monitorDevices().first,
+          throwsA(
+              isA<UdevErrnoException>().having((e) => e.errno, 'errno', 123)));
+
+      verify(() => udev.monitor_unref(monitor)).called(1);
     });
   });
 }
