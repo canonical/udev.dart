@@ -37,7 +37,3 @@ final stream = UdevMonitor.fromNetlink(subsystems: ['usb'])
 stream.timeout(const Duration(seconds: 60), onTimeout: (sink) => sink.close())
     .listen(print);
 ```
-
-## Contributing to udev.dart
-
-We welcome contributions! See the [contribution guide](CONTRIBUTING.md) for more details.
