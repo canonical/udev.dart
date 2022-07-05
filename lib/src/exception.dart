@@ -57,11 +57,3 @@ class UdevDeviceIdException extends UdevDeviceException {
 
   final String id;
 }
-
-@immutable
-class UdevEnvironmentException extends UdevDeviceException {
-  const UdevEnvironmentException(this.environment)
-      : super('Device not found (environment: $environment)');
-
-  final Map<String, String> environment;
-}

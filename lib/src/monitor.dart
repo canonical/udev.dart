@@ -9,9 +9,11 @@ import 'device.dart';
 import 'extensions.dart';
 import 'libudev.dart';
 
+/// Monitors kernel sys devices.
 extension UdevMonitor on UdevContext {
-  Stream<UdevDevice> monitorDevices(
-    String name, {
+  /// Returns a stream of kernel sys device changes.
+  Stream<UdevDevice> monitorDevices({
+    String name = 'udev',
     int? bufferSize,
     List<String> subsystems = const [],
     List<String> tags = const [],

@@ -44,8 +44,8 @@ void main() {
       when(() => udev.monitor_receive_device(monitor)).thenAnswer((_) => dev);
 
       final context = UdevContext.fromPointer(ctx);
-      final stream = context.monitorDevices('udev',
-          bufferSize: 123, subsystems: ['sub'], tags: ['tag']);
+      final stream = context
+          .monitorDevices(bufferSize: 123, subsystems: ['sub'], tags: ['tag']);
 
       write(fds.last, [1]);
 

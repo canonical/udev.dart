@@ -3,18 +3,118 @@ import 'dart:ffi' as ffi;
 import 'package:ffi/ffi.dart' as ffi;
 import 'package:meta/meta.dart';
 
+import 'context.dart';
+import 'exception.dart';
 import 'extensions.dart';
 import 'finalizer.dart';
 import 'libudev.dart';
 import 'list_entry.dart';
 
+/// Represents a kernel sys device.
+///
+/// Devices are uniquely identified by their syspath, every device has exactly
+/// one path in the kernel sys filesystem. Devices usually belong to a kernel
+/// subsystem, and have a unique name inside that subsystem.
 @immutable
 class UdevDevice implements ffi.Finalizable {
   UdevDevice._(this._ptr) {
     finalizer.attach(this, udev.device_ref(_ptr));
   }
 
-  final ffi.Pointer<udev_device_t> _ptr;
+  /// Creates a device from a [syspath] value.
+  ///
+  /// Optionally, a shared `context` can be provided to avoid temporarily
+  /// creating a new one for the duration of the call.
+  static UdevDevice fromSyspath(String syspath, {UdevContext? context}) {
+    return ffi.using((arena) {
+      final csyspath = syspath.toCString(allocator: arena);
+      final dev = _createDevice(
+        context,
+        (ctx) => udev.device_new_from_syspath(ctx, csyspath),
+      );
+      return dev.orThrowIfNull(UdevSyspathException(syspath));
+    });
+  }
+
+  /// Creates a device from [devtype] and [devnum] values.
+  ///
+  /// Optionally, a shared `context` can be provided to avoid temporarily
+  /// creating a new one for the duration of the call.
+  static UdevDevice fromDevnum(
+    String devtype,
+    int devnum, {
+    UdevContext? context,
+  }) {
+    return ffi.using((arena) {
+      assert(devtype.length == 1, devtype);
+      final cdevtype = devtype.codeUnitAt(0);
+      final dev = _createDevice(
+        context,
+        (ctx) => udev.device_new_from_devnum(ctx, cdevtype, devnum),
+      );
+      return dev.orThrowIfNull(UdevDevnumException(devtype, devnum));
+    });
+  }
+
+  /// Creates a device from [subsystem] and [sysname] values.
+  ///
+  /// Optionally, a shared `context` can be provided to avoid temporarily
+  /// creating a new one for the duration of the call.
+  static UdevDevice fromSubsystemSysname(
+    String subsystem,
+    String sysname, {
+    UdevContext? context,
+  }) {
+    return ffi.using((arena) {
+      final csubsystem = subsystem.toCString(allocator: arena);
+      final csysname = sysname.toCString(allocator: arena);
+      final dev = _createDevice(
+        context,
+        (ctx) => udev.device_new_from_subsystem_sysname(
+          ctx,
+          csubsystem,
+          csysname,
+        ),
+      );
+      return dev
+          .orThrowIfNull(UdevSubsystemSysnameException(subsystem, sysname));
+    });
+  }
+
+  /// Creates a device from special device ID value.
+  ///
+  /// | ID | Description |
+  /// |---|---|
+  /// | `b8:2` | block device major:minor |
+  /// | `c128:1` | char device major:minor |
+  /// | `n3` | network device ifindex |
+  /// | `+sound:card29` | kernel driver core subsystem:device name |
+  ///
+  /// Optionally, a shared `context` can be provided to avoid temporarily
+  /// creating a new one for the duration of the call.
+  static UdevDevice fromDeviceId(String id, {UdevContext? context}) {
+    return ffi.using((arena) {
+      final cid = id.toCString(allocator: arena);
+      final dev = _createDevice(
+        context,
+        (ctx) => udev.device_new_from_device_id(ctx, cid),
+      );
+      return dev.orThrowIfNull(UdevDeviceIdException(id));
+    });
+  }
+
+  static UdevDevice? _createDevice(
+    UdevContext? context,
+    ffi.Pointer<udev_device_t> Function(ffi.Pointer<udev_t> ctx) factory,
+  ) {
+    return ffi.using((arena) {
+      final ctx = context ?? UdevContext();
+      final ptr = factory(ctx.toPointer());
+      final dev = UdevDevice.fromPointer(ptr);
+      udev.device_unref(ptr);
+      return dev;
+    });
+  }
 
   /// @internal
   static UdevDevice? fromPointer(ffi.Pointer<udev_device_t> ptr) {
@@ -24,6 +124,8 @@ class UdevDevice implements ffi.Finalizable {
 
   /// @internal
   ffi.Pointer<udev_device_t> toPointer() => _ptr;
+
+  final ffi.Pointer<udev_device_t> _ptr;
 
   /// The kernel devpath value.
   ///
@@ -36,7 +138,7 @@ class UdevDevice implements ffi.Finalizable {
   /// The device type name.
   String? get devtype => udev.device_get_devtype(_ptr).toDartString();
 
-  /// The sys path value.
+  /// The syspath value.
   ///
   /// The path is absolute and starts with the sys mount point.
   String get syspath => udev.device_get_syspath(_ptr).toDartString()!;
@@ -100,10 +202,8 @@ class UdevDevice implements ffi.Finalizable {
   UdevDevice? get parent =>
       UdevDevice.fromPointer(udev.device_get_parent(_ptr));
 
-  UdevDevice? getParentWithSubsystemDevtype(
-    String subsystem, [
-    String? devtype,
-  ]) {
+  /// Find the next parent device.
+  UdevDevice? findParent({required String subsystem, String? devtype}) {
     return ffi.using((arena) {
       final csubsystem = subsystem.toCString(allocator: arena);
       final cdevtype = devtype?.toCString(allocator: arena) ?? ffi.nullptr;
