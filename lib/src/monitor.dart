@@ -6,6 +6,7 @@ import 'package:stdlibc/stdlibc.dart';
 
 import 'context.dart';
 import 'device.dart';
+import 'exception.dart';
 import 'extensions.dart';
 import 'libudev.dart';
 
@@ -38,12 +39,17 @@ extension UdevMonitor on UdevContext {
     });
 
     if (bufferSize != null) {
-      udev.monitor_set_receive_buffer_size(monitor!, bufferSize);
+      final res = udev.monitor_set_receive_buffer_size(monitor!, bufferSize);
+      if (res < 0) {
+        udev.monitor_unref(monitor!);
+        throw UdevErrnoException(-res);
+      }
     }
 
-    if (udev.monitor_enable_receiving(monitor!) < 0) {
+    final res = udev.monitor_enable_receiving(monitor!);
+    if (res < 0) {
       udev.monitor_unref(monitor!);
-      return; // TODO: throw
+      throw UdevErrnoException(-res);
     }
 
     try {
