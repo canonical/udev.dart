@@ -8,32 +8,30 @@
 ## Querying devices
 
 ```dart
-void main() {
-  print(UdevDevice.fromSyspath('/sys/devices/<...>'));
-  print(UdevDevice.fromDevnum('b', 66304));
-  print(UdevDevice.fromSubsystemSysname('net', 'eth0'));
-  print(UdevDevice.fromDeviceId('c128:1'));
-}
+print(UdevDevice.fromSyspath('/sys/devices/<...>'));
+print(UdevDevice.fromDevnum('b', 66304));
+print(UdevDevice.fromSubsystemSysname('net', 'eth0'));
+print(UdevDevice.fromDeviceId('c128:1'));
 ```
 
 ## Enumerating devices
 
 ```dart
-void main() {
-  final context = UdevContext();
+final context = UdevContext();
 
-  final syspaths = context.enumerateDevices(subsystems: ['usb']);
-  for (final syspath in syspaths) {
-    final device = UdevDevice.fromSyspath(syspath, context: context);
-    print(device);
-  }
+final syspaths = context.enumerateDevices(subsystems: ['usb']);
+for (final syspath in syspaths) {
+  final device = UdevDevice.fromSyspath(syspath, context: context);
+  print(device);
 }
 ```
 
 ## Monitoring devices
 
 ```dart
-final stream = UdevMonitor.fromNetlink(subsystems: ['usb'])
+final context = UdevContext();
+
+final stream = context.monitorDevices(subsystems: ['usb'])
 stream.timeout(const Duration(seconds: 60), onTimeout: (sink) => sink.close())
     .listen(print);
 ```
