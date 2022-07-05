@@ -23,7 +23,7 @@ void main() {
     expect(syspath1, isNot(equals(syspath3)));
     expect(syspath1.hashCode, equals(syspath2.hashCode));
     expect(syspath1.hashCode, isNot(equals(syspath3.hashCode)));
-    expect(syspath1, isNot(equals(UdevEnvironmentException({}))));
+    expect(syspath1, isNot(equals(const UdevDeviceException(''))));
   });
 
   test('device not found', () {
@@ -56,27 +56,27 @@ void main() {
       overrideLibudevForTesting(libudev);
 
       expect(
-        () => UdevDevices.fromSyspath('SYSPATH'),
+        () => UdevDevice.fromSyspath('SYSPATH'),
         throwsA(isA<UdevSyspathException>()
             .having((e) => e.syspath, 'syspath', 'SYSPATH')),
       );
 
       expect(
-        () => UdevDevices.fromDevnum('S', 123),
+        () => UdevDevice.fromDevnum('S', 123),
         throwsA(isA<UdevDevnumException>()
             .having((e) => e.type, 'type', 'S')
             .having((e) => e.devnum, 'devnum', 123)),
       );
 
       expect(
-        () => UdevDevices.fromSubsystemSysname('SUBSYSTEM', 'SYSNAME'),
+        () => UdevDevice.fromSubsystemSysname('SUBSYSTEM', 'SYSNAME'),
         throwsA(isA<UdevSubsystemSysnameException>()
             .having((e) => e.subsystem, 'subsystem', 'SUBSYSTEM')
             .having((e) => e.sysname, 'sysname', 'SYSNAME')),
       );
 
       expect(
-        () => UdevDevices.fromDeviceId('SUBSYSTEM:SYSNAME'),
+        () => UdevDevice.fromDeviceId('SUBSYSTEM:SYSNAME'),
         throwsA(isA<UdevDeviceIdException>()
             .having((e) => e.id, 'id', 'SUBSYSTEM:SYSNAME')),
       );

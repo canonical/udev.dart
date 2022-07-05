@@ -4,6 +4,7 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:udev/src/context.dart';
+import 'package:udev/src/enumerate.dart';
 import 'package:udev/src/libudev.dart' hide udev;
 
 import 'mock_libudev.dart';
@@ -11,7 +12,7 @@ import 'test_data.dart';
 import 'test_utils.dart';
 
 void main() {
-  test('scan', () {
+  test('enumerate', () {
     ffi.using((arena) {
       final ctx = ffi.Pointer<udev_t>.fromAddress(0xc);
       final ptr = ffi.Pointer<udev_enumerate_t>.fromAddress(0xe);
@@ -44,32 +45,32 @@ void main() {
       final context = UdevContext.fromPointer(ctx);
 
       expect(
-        context.scanDevices(subsystems: ['net']),
+        context.enumerateDevices(subsystems: ['net']),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
       verify(() => udev.enumerate_add_match_subsystem(ptr, any())).called(1);
 
       expect(
-        context.scanDevices(sysnames: ['nvme0n1']),
+        context.enumerateDevices(sysnames: ['nvme0n1']),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
       verify(() => udev.enumerate_add_match_sysname(ptr, any())).called(1);
 
       expect(
-        context.scanDevices(tags: [':systemd:']),
+        context.enumerateDevices(tags: [':systemd:']),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
       verify(() => udev.enumerate_add_match_tag(ptr, any())).called(1);
 
       expect(
-        context.scanDevices(properties: {'foo': 'bar'}),
+        context.enumerateDevices(properties: {'foo': 'bar'}),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
       verify(() => udev.enumerate_add_match_property(ptr, any(), any()))
           .called(1);
 
       expect(
-        context.scanDevices(sysattrs: {'baz': 'qux'}),
+        context.enumerateDevices(sysattrs: {'baz': 'qux'}),
         equals([wlp0s20f3.syspath, nvme0n1.syspath, card1.syspath]),
       );
       verify(() => udev.enumerate_add_match_sysattr(ptr, any(), any()))
