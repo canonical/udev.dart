@@ -142,6 +142,18 @@ MockLibudev createMockLibudev({
                     .toDartString()]
                 ?.toCString(allocator: allocator) ??
             ffi.nullptr);
+    when(() => udev.device_set_sysattr_value(devptr, any(), any())).thenAnswer(
+      (invocation) {
+        final sysattr =
+            (invocation.positionalArguments[1] as ffi.Pointer<ffi.Char>)
+                .toDartString()!;
+        final value =
+            (invocation.positionalArguments[2] as ffi.Pointer<ffi.Char>)
+                .toDartString();
+        device.sysattrs[sysattr] = value;
+        return 0;
+      },
+    );
 
     when(() => udev.device_get_parent(devptr)).thenReturn(ffi.nullptr);
   }
