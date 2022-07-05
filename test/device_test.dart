@@ -4,6 +4,7 @@ import 'package:ffi/ffi.dart' as ffi;
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 import 'package:udev/src/device.dart';
+import 'package:udev/src/extensions.dart';
 import 'package:udev/src/libudev.dart';
 
 import 'mock_libudev.dart';
@@ -11,6 +12,38 @@ import 'test_data.dart';
 import 'test_utils.dart';
 
 void main() {
+  test('device', () {
+    ffi.using((arena) {
+      final udev = createMockLibudev(
+        allocator: arena,
+        context: ffi.Pointer<udev_t>.fromAddress(0xc),
+      );
+      overrideLibudevForTesting(udev);
+
+      final aptr = ffi.Pointer<udev_device_t>.fromAddress(0xa);
+      when(() => udev.device_ref(aptr)).thenReturn(aptr);
+      final a = UdevDevice.fromPointer(aptr);
+      expect(a, isNotNull);
+      expect(a!.toPointer(), equals(aptr));
+
+      final bptr = ffi.Pointer<udev_device_t>.fromAddress(0xb);
+      when(() => udev.device_ref(bptr)).thenReturn(bptr);
+      final b = UdevDevice.fromPointer(bptr);
+      expect(b, isNotNull);
+      expect(b!.toPointer(), equals(bptr));
+
+      when(() => udev.device_get_syspath(aptr))
+          .thenReturn('/sys/devices/fake'.toCString(allocator: arena));
+      when(() => udev.device_get_syspath(bptr))
+          .thenReturn('/sys/devices/fake'.toCString(allocator: arena));
+
+      expect(a, equals(b));
+      expect(a, isNot(same(b)));
+      expect(a.hashCode, equals(b.hashCode));
+      expect(a.toString(), equals(b.toString()));
+    });
+  });
+
   test('net/wlan', () {
     ffi.using((arena) {
       final dev = ffi.Pointer<udev_device_t>.fromAddress(0xd);
