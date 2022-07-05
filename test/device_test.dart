@@ -135,4 +135,20 @@ void main() {
       expect(device.sysattrs['foo'], equals('bar'));
     });
   });
+
+  test('tags', () {
+    ffi.using((arena) {
+      final dev = ffi.Pointer<udev_device_t>.fromAddress(0xd);
+      final udev = createMockLibudev(
+        allocator: arena,
+        context: ffi.Pointer<udev_t>.fromAddress(0xc),
+        devices: {dev: nvme0n1},
+      );
+      overrideLibudevForTesting(udev);
+
+      final device = UdevDevice.fromSyspath(nvme0n1.syspath);
+      expect(device.tags.contains('systemd'), isTrue);
+      expect(device.tags.contains('foobar'), isFalse);
+    });
+  });
 }

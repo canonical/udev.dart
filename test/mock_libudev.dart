@@ -133,6 +133,11 @@ MockLibudev createMockLibudev({
     final tags =
         _createMockListEntries(udev, device.tags, allocator: allocator);
     when(() => udev.device_get_tags_list_entry(devptr)).thenReturn(tags);
+    when(() => udev.device_has_tag(devptr, any())).thenAnswer((invocation) {
+      final tag = (invocation.positionalArguments.last as ffi.Pointer<ffi.Char>)
+          .toDartString();
+      return device.tags.contains(tag) ? 1 : 0;
+    });
 
     final sysattrs =
         _createMockMapEntries(udev, device.sysattrs, allocator: allocator);
