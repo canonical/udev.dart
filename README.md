@@ -1,7 +1,7 @@
 # udev.dart
 
-[![CI](https://github.com/jpnurmi/udev.dart/workflows/Tests/badge.svg)](https://github.com/jpnurmi/geoclue.dart/actions/workflows/tests.yaml)
-[![codecov](https://codecov.io/gh/jpnurmi/udev.dart/branch/main/graph/badge.svg?token=YdlI3jrz92)](https://codecov.io/gh/jpnurmi/udev.dart)
+[![CI](https://github.com/canonical/udev.dart/workflows/Tests/badge.svg)](https://github.com/canonical/geoclue.dart/actions/workflows/tests.yaml)
+[![codecov](https://codecov.io/gh/canonical/udev.dart/branch/main/graph/badge.svg?token=tbcol7EW67)](https://codecov.io/gh/canonical/udev.dart)
 
 [udev](https://www.freedesktop.org/software/systemd/man/libudev.html) — API for enumerating and introspecting local devices
 
