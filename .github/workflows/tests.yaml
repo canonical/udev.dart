@@ -20,10 +20,7 @@ jobs:
         token: ${{secrets.CODECOV_TOKEN}}
 
   run:
-    runs-on: ${{matrix.os}}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+    runs-on: ubuntu-20.04
     container:
       image: dart:stable
     steps:
