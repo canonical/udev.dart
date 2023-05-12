@@ -17,7 +17,7 @@ class UdevIterable with IterableMixin<String> {
   Iterator<String> get iterator => UdevIterator(_ptr);
 }
 
-class UdevIterator extends Iterator<String> {
+class UdevIterator implements Iterator<String> {
   UdevIterator(this._ptr);
 
   final ffi.Pointer<udev_list_entry_t> _ptr;
