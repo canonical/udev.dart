@@ -18,7 +18,7 @@ dependencies:
   stdlibc: ^0.1.2
 
 dev_dependencies:
-  ffigen: ^8.0.0
+  ffigen: ^10.0.0
   lints: ^2.0.0
   mocktail: ^1.0.0
   test: ^1.17.7
