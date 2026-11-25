@@ -65,9 +65,9 @@ class Libudev {
   }
 
   late final _get_userdataPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Pointer<ffi.Void> Function(
-              ffi.Pointer<udev_t>)>>('udev_get_userdata');
+          ffi
+          .NativeFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<udev_t>)>>(
+      'udev_get_userdata');
   late final _get_userdata = _get_userdataPtr
       .asFunction<ffi.Pointer<ffi.Void> Function(ffi.Pointer<udev_t>)>();
 
