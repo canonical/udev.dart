@@ -10,11 +10,11 @@ on:
 jobs:
   build-runner:
     if: ${{false}}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-26.04
     container:
       image: dart:stable
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - run: dart pub get
     - run: dart run build_runner build --delete-conflicting-outputs
     - run: ./.github/scripts/check-outdated-files.sh
@@ -22,5 +22,5 @@ jobs:
     - uses: peter-evans/create-pull-request@v5
       if: github.event_name != 'pull_request'
       with:
-        title: 'Regenerate files'
-        commit-message: 'Regenerate files'
+        title: 'chore: regenerate files'
+        commit-message: 'chore: regenerate files'
