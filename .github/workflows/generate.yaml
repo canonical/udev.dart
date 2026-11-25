@@ -22,5 +22,5 @@ jobs:
     - uses: peter-evans/create-pull-request@v5
       if: github.event_name != 'pull_request'
       with:
-        title: 'Regenerate files'
-        commit-message: 'Regenerate files'
+        title: 'chore: regenerate files'
+        commit-message: 'chore: regenerate files'
